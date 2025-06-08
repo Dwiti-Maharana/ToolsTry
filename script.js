@@ -21,134 +21,191 @@ document.addEventListener('DOMContentLoaded', function() {
     // Smooth scroll for all anchor links (e.g., "Start Using Tools Now")
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            // Ensure the target element exists before attempting to scroll
-            const targetId = this.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-
-            if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth'
-                });
+            const href = this.getAttribute('href');
+            if (href.startsWith('#') && href.length > 1) {
+                e.preventDefault();
+                const targetElement = document.querySelector(href);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
             }
         });
     });
 
-    // --- Dynamic Tool Display Logic ---
-    const toolLinks = document.querySelectorAll('[data-tool]'); // Selects all tool links
-    const categoryViewAllBtns = document.querySelectorAll('.btn-view-all'); // Selects "View All" buttons
-    const toolDisplaySection = document.getElementById('tool-display-section');
-    const toolContent = document.getElementById('tool-content');
-    const backToToolsBtn = document.getElementById('back-to-tools-btn');
-    const categorySection = document.getElementById('category-section');
-    const heroSection = document.getElementById('hero-section');
-    const highlightedToolsSection = document.getElementById('highlighted-tools-section'); // New reference
+    // --- CHANGE START: New code to handle active navigation link on scroll ---
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-menu .nav-link');
 
-    // Handle clicks on individual tool links
-    toolLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default link behavior (page reload)
-            const toolName = this.dataset.tool; // Get the tool name from data-tool attribute
+    const onScroll = () => {
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
 
-            // Populate the tool-content div with a placeholder message
-            toolContent.innerHTML = `
-                <h2 style="text-align: center; color: var(--accent-cyan-glow);">You selected: ${toolName.replace(/-/g, ' ').toUpperCase()}</h2>
-                <p style="text-align: center;">This is where the **${toolName.replace(/-/g, ' ').toUpperCase()}** tool's functionality would be displayed.</p>
-                <p style="text-align: center; font-style: italic;">(Tool functionality coming soon!)</p>
-            `;
-
-            // Hide main sections and show the tool display section
-            categorySection.style.display = 'none';
-            heroSection.style.display = 'none';
-            highlightedToolsSection.style.display = 'none'; // Hide new section
-            toolDisplaySection.style.display = 'block';
-
-            // Scroll to the top of the page for a smooth transition
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        let activeSectionId = '';
+        sections.forEach(section => {
+            // Check if the section is in the viewport (with a 150px offset from the top)
+            if (scrollPosition >= section.offsetTop - 150 && scrollPosition < section.offsetTop + section.offsetHeight - 150) {
+                activeSectionId = section.getAttribute('id');
+            }
         });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            // The link's href is '#section-id'. We compare it to the current active section's ID.
+            if (link.getAttribute('href') === '#' + activeSectionId) {
+                link.classList.add('active');
+            }
+        });
+        
+        // A fallback for when you scroll to the very top
+        if (activeSectionId === '' && scrollPosition < 400) {
+            // If no section is active and we are near the top, make the first link active
+            // This handles the hero section which doesn't have a corresponding nav link
+            const firstLink = document.querySelector('.nav-menu .nav-link[href="#document-tools"]');
+            if (firstLink) {
+                 firstLink.classList.add('active');
+            }
+        }
+    };
+
+    window.addEventListener('scroll', onScroll);
+    // Call it once on load to set the initial correct state
+    onScroll();
+    // --- CHANGE END ---
+
+
+    // --- GSAP Animations for Hero Section ---
+    gsap.from(".hero-title .animated-text", {
+        duration: 1.5,
+        y: 50,
+        opacity: 0,
+        ease: "power3.out",
+        stagger: 0.3,
+        delay: 0.5
     });
 
-    // Handle clicks on "View All" category buttons
-    categoryViewAllBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default link behavior
-            const categoryName = this.dataset.category; // Get the category name from data-category attribute
-
-            // Populate the tool-content div with a placeholder message for the category
-            toolContent.innerHTML = `
-                <h2 style="text-align: center; color: var(--accent-cyan-glow);">All ${categoryName.replace(/-/g, ' ').toUpperCase()} Tools</h2>
-                <p style="text-align: center;">This section would list all specific tools available under the **${categoryName.replace(/-/g, ' ').toUpperCase()}** category.</p>
-                <p style="text-align: center; font-style: italic;">(More tools for this category are on the way!)</p>
-            `;
-
-            // Hide main sections and show the tool display section
-            categorySection.style.display = 'none';
-            heroSection.style.display = 'none';
-            highlightedToolsSection.style.display = 'none'; // Hide new section
-            toolDisplaySection.style.display = 'block';
-
-            // Scroll to the top of the page
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+    gsap.from(".hero-subtitle", {
+        duration: 1.5,
+        y: 30,
+        opacity: 0,
+        ease: "power3.out",
+        delay: 1.2
     });
 
-    // Handle click on the "Back to all tools" button
-    if (backToToolsBtn) {
-        backToToolsBtn.addEventListener('click', function() {
-            // Hide the tool display section and show the main sections
-            toolDisplaySection.style.display = 'none';
-            categorySection.style.display = 'block';
-            heroSection.style.display = 'block';
-            highlightedToolsSection.style.display = 'block'; // Show new section
-        });
-    }
+    gsap.from(".btn-action", {
+        duration: 1,
+        y: 20,
+        opacity: 0,
+        ease: "power2.out",
+        delay: 1.8
+    });
 
+    gsap.to(".bouncing-circle", {
+        y: -20,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        duration: 2,
+        stagger: 0.5
+    });
 
     // --- GSAP Animations for Highlighted Tools ---
-
-    // Register ScrollTrigger plugin (important!)
     gsap.registerPlugin(ScrollTrigger);
 
     const toolCards = gsap.utils.toArray('.highlighted-tool-card');
 
     toolCards.forEach((card, i) => {
         gsap.fromTo(card,
+            { opacity: 0, y: 50, scale: 0.8, rotationX: 20 },
             {
-                opacity: 0,
-                y: 50,
-                scale: 0.8,
-                rotationX: 20 // Slight 3D tilt
-            },
-            {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                rotationX: 0,
-                duration: 1,
-                ease: "power3.out",
-                // Stagger the animation of elements within the grid
-                delay: i * 0.15, // Stagger delay based on index
+                opacity: 1, y: 0, scale: 1, rotationX: 0, duration: 1, ease: "power3.out",
+                delay: i * 0.15,
                 scrollTrigger: {
                     trigger: card,
-                    start: "top 85%", // When the top of the card is 85% down from the top of the viewport
+                    start: "top 85%",
                     end: "bottom 20%",
-                    toggleActions: "play none none reverse", // Play on scroll in, reverse on scroll out
-                    // markers: true, // Uncomment for debugging scroll trigger positions
+                    toggleActions: "play none none reverse",
                 }
             }
         );
 
-        // Optional: Add a subtle continuous animation for the icons or cards themselves
-        // This won't be scroll-triggered, but runs perpetually once visible
         gsap.to(card.querySelector('.tool-icon'), {
             y: -5,
-            repeat: -1, // Infinite repeat
-            yoyo: true, // Go back and forth
+            repeat: -1,
+            yoyo: true,
             duration: 2,
             ease: "sine.inOut",
-            delay: i * 0.2 // Stagger the subtle animation
+            delay: i * 0.2
         });
     });
+
+    // Handle clicks on all tool links (from highlighted cards or category lists)
+    document.querySelectorAll('[data-tool]').forEach(link => {
+        link.addEventListener('click', function(event) {
+            const href = this.getAttribute('href');
+
+            if (href && href !== '#') {
+                return;
+            }
+
+            event.preventDefault();
+
+            const toolData = this.dataset.tool;
+            if (toolData) {
+                const toolContentDiv = document.getElementById('tool-content');
+                const toolDisplaySection = document.getElementById('tool-display-section');
+                const heroSection = document.getElementById('hero-section');
+                const highlightedToolsSection = document.getElementById('highlighted-tools-section');
+                const categorySection = document.getElementById('category-section');
+
+                toolContentDiv.innerHTML = `
+                    <h2 style="text-align: center; color: var(--accent-cyan-glow);">You selected: ${toolData.replace(/-/g, ' ').toUpperCase()}</h2>
+                    <p style="text-align: center;">This is where the **${toolData.replace(/-/g, ' ').toUpperCase()}** tool's functionality would be displayed.</p>
+                    <p style="text-align: center; font-style: italic;">(Tool functionality coming soon!)</p>
+                `;
+                heroSection.style.display = 'none';
+                highlightedToolsSection.style.display = 'none';
+                categorySection.style.display = 'none';
+                toolDisplaySection.style.display = 'block';
+                toolDisplaySection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    // Handle "View All" category buttons (placeholder logic)
+    document.querySelectorAll('.btn-view-all').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const categoryName = this.dataset.category;
+            const toolContentDiv = document.getElementById('tool-content');
+            const toolDisplaySection = document.getElementById('tool-display-section');
+            const heroSection = document.getElementById('hero-section');
+            const highlightedToolsSection = document.getElementById('highlighted-tools-section');
+            const categorySection = document.getElementById('category-section');
+
+            toolContentDiv.innerHTML = `
+                <h2 style="text-align: center; color: var(--accent-cyan-glow);">All ${categoryName.replace(/-/g, ' ').toUpperCase()} Tools</h2>
+                <p style="text-align: center;">This section would list all tools under the ${categoryName} category.</p>
+                <p style="text-align: center; font-style: italic;">(More tools for this category are on the way!)</p>
+            `;
+            heroSection.style.display = 'none';
+            highlightedToolsSection.style.display = 'none';
+            categorySection.style.display = 'none';
+            toolDisplaySection.style.display = 'block';
+            toolDisplaySection.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Back to tools button
+    const backToToolsBtn = document.getElementById('back-to-tools-btn');
+    if (backToToolsBtn) {
+        backToToolsBtn.addEventListener('click', function() {
+            document.getElementById('tool-display-section').style.display = 'none';
+            document.getElementById('hero-section').style.display = 'block';
+            document.getElementById('highlighted-tools-section').style.display = 'block';
+            document.getElementById('category-section').style.display = 'block';
+            document.getElementById('category-section').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
 
 });

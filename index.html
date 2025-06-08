@@ -12,9 +12,10 @@
     <nav class="navbar">
         <div class="navbar-content">
             <a class="site-brand" href="#">ToolsTry</a>
-            <div class="menu-toggle" id="mobile-menu-toggle">&#9776;</div>
+            <div class="menu-toggle" id="mobile-menu-toggle">☰</div>
             <ul class="nav-menu" id="main-nav-menu">
-                <li class="nav-item"><a class="nav-link active" href="#document-tools">Document Tools</a></li>
+                <!-- NOTE: The 'active' class is removed from the first link. JS now handles this. -->
+                <li class="nav-item"><a class="nav-link" href="#document-tools">Document Tools</a></li>
                 <li class="nav-item"><a class="nav-link" href="#image-tools">Image Tools</a></li>
                 <li class="nav-item"><a class="nav-link" href="#office-tools">Office Tools</a></li>
                 <li class="nav-item"><a class="nav-link" href="#audio-video-tools">Audio & Video</a></li>
@@ -47,42 +48,56 @@
             <h2 class="section-title">Our Powerhouse Tools</h2>
             <div class="highlighted-tools-grid">
 
-                <div class="highlighted-tool-card tool-item">
-                    <div class="tool-icon">📄</div>
-                    <h3 class="tool-title">PDF Merge</h3>
-                    <p class="tool-description">Combine multiple PDF documents into one seamless file.</p>
-                </div>
+                <!-- PDF Merge Link -->
+                <a href="pdfmerger.html" class="tool-card-link" data-tool="pdf-merge">
+                    <div class="highlighted-tool-card tool-item">
+                        <div class="tool-icon">📄</div>
+                        <h3 class="tool-title">PDF Merge</h3>
+                        <p class="tool-description">Combine multiple PDF documents into one seamless file.</p>
+                    </div>
+                </a>
 
-                <div class="highlighted-tool-card tool-item">
-                    <div class="tool-icon">🖼️</div>
-                    <h3 class="tool-title">Image Compressor</h3>
-                    <p class="tool-description">Shrink image file sizes without noticeable quality loss.</p>
-                </div>
+                <!-- Image Compressor Link -->
+                <a href="image-compressor.html" class="tool-card-link" data-tool="image-compressor">
+                    <div class="highlighted-tool-card tool-item">
+                        <div class="tool-icon">🖼️</div>
+                        <h3 class="tool-title">Image Compressor</h3>
+                        <p class="tool-description">Shrink image file sizes without noticeable quality loss.</p>
+                    </div>
+                </a>
 
-                <div class="highlighted-tool-card tool-item">
-                    <div class="tool-icon">📝</div>
-                    <h3 class="tool-title">Resume Builder</h3>
-                    <p class="tool-description">Create professional, eye-catching resumes in minutes.</p>
-                </div>
+                <!-- Placeholder Links -->
+                <a href="#" class="tool-card-link" data-tool="resume-builder">
+                    <div class="highlighted-tool-card tool-item">
+                        <div class="tool-icon">📝</div>
+                        <h3 class="tool-title">Resume Builder</h3>
+                        <p class="tool-description">Create professional, eye-catching resumes in minutes.</p>
+                    </div>
+                </a>
 
-                <div class="highlighted-tool-card tool-item">
-                    <div class="tool-icon">🎬</div>
-                    <h3 class="tool-title">Video Converter</h3>
-                    <p class="tool-description">Convert video files to various formats, fast and easy.</p>
-                </div>
+                <a href="#" class="tool-card-link" data-tool="video-converter">
+                    <div class="highlighted-tool-card tool-item">
+                        <div class="tool-icon">🎬</div>
+                        <h3 class="tool-title">Video Converter</h3>
+                        <p class="tool-description">Convert video files to various formats, fast and easy.</p>
+                    </div>
+                </a>
 
-                <div class="highlighted-tool-card tool-item">
-                    <div class="tool-icon">🔗</div>
-                    <h3 class="tool-title">QR Code Generator</h3>
-                    <p class="tool-description">Generate custom QR codes for links, text, and more.</p>
-                </div>
+                <a href="#" class="tool-card-link" data-tool="qr-code-generator">
+                    <div class="highlighted-tool-card tool-item">
+                        <div class="tool-icon">🔗</div>
+                        <h3 class="tool-title">QR Code Generator</h3>
+                        <p class="tool-description">Generate custom QR codes for links, text, and more.</p>
+                    </div>
+                </a>
 
-                <div class="highlighted-tool-card tool-item">
-                    <div class="tool-icon">✍️</div>
-                    <h3 class="tool-title">Grammar Checker</h3>
-                    <p class="tool-description">Proofread your text for grammar, spelling, and style errors.</p>
-                </div>
-
+                <a href="#" class="tool-card-link" data-tool="grammar-checker">
+                    <div class="highlighted-tool-card tool-item">
+                        <div class="tool-icon">✍️</div>
+                        <h3 class="tool-title">Grammar Checker</h3>
+                        <p class="tool-description">Proofread your text for grammar, spelling, and style errors.</p>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
@@ -99,7 +114,7 @@
                         <li><a href="#" data-tool="pdf-viewer">PDF Viewer</a></li>
                         <li><a href="#" data-tool="pdf-to-word">PDF to Word Converter</a></li>
                         <li><a href="#" data-tool="word-to-pdf">Word to PDF Converter</a></li>
-                        <li><a href="#" data-tool="pdf-merge">PDF Merge</a></li>
+                        <li><a href="pdfmerger.html" data-tool="pdf-merge">PDF Merge</a></li>
                         <li><a href="#" data-tool="pdf-split">PDF Split</a></li>
                         <li><a href="#" data-tool="pdf-compress">PDF Compress</a></li>
                         <li><a href="#" data-tool="pdf-unlock-protect">PDF Unlock / Protect</a></li>
@@ -112,7 +127,7 @@
                     <h3>🖼️ Image Tools</h3>
                     <ul>
                         <li><a href="#" data-tool="image-resizer">Image Resizer</a></li>
-                        <li><a href="#" data-tool="image-compressor">Image Compressor</a></li>
+                        <li><a href="image-compressor.html" data-tool="image-compressor">Image Compressor</a></li>
                         <li><a href="#" data-tool="image-cropper">Image Cropper</a></li>
                         <li><a href="#" data-tool="jpg-to-png">Convert JPG to PNG</a></li>
                         <li><a href="#" data-tool="png-to-jpg">Convert PNG to JPG</a></li>
@@ -192,7 +207,7 @@
 
     <section class="tool-display-section" id="tool-display-section" style="display: none;">
         <div class="container">
-            <button class="back-to-tools-btn" id="back-to-tools-btn">&larr; Back to all tools</button>
+            <button class="back-to-tools-btn" id="back-to-tools-btn">← Back to all tools</button>
             <div id="tool-content">
                 </div>
         </div>
@@ -200,7 +215,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
+            <p>© 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
             <div class="footer-links">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>

@@ -283,6 +283,15 @@ h1, h2, h3, h4, h5, h6 {
     text-align: center;
 }
 
+/* --- START OF CHANGE --- */
+/* This rule styles the new <a> tag wrapping the cards */
+a.tool-card-link {
+    text-decoration: none; /* Removes the underline */
+    color: inherit;      /* Makes the card text use its defined color, not the default link color */
+    display: block;      /* Ensures the link fills the grid area properly */
+}
+/* --- END OF CHANGE --- */
+
 .highlighted-tools-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -320,8 +329,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tool-title {
-    font-family: 'Montserrat', sans-serif;
     font-size: 1.8rem;
+    font-weight: 600;
     margin-bottom: 0.8rem;
     color: #ffffff;
 }
@@ -419,33 +428,34 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(-2px);
 }
 
-/* --- Tool Display Section (Initially hidden) --- */
+/* Tool Display Section (for placeholders) */
 .tool-display-section {
-    background-color: #12151a; /* Sidebar/Tool display background */
-    padding: 3rem 0;
-    min-height: 50vh; /* Ensure some height for content */
+    padding: 4rem 0;
 }
 
 .back-to-tools-btn {
-    background: none;
-    border: 2px solid var(--accent-cyan-glow);
-    color: var(--accent-cyan-glow);
+    display: inline-block;
+    background-color: #2a303d;
+    color: #e0e0e0;
     padding: 0.8rem 1.5rem;
+    border: 1px solid #5a6268;
     border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 1rem;
     margin-bottom: 2rem;
     transition: all 0.3s ease;
-    box-shadow: 0 0 8px var(--glow-shadow);
 }
 
 .back-to-tools-btn:hover {
-    background-color: var(--accent-cyan-glow);
-    color: #12151a;
-    box-shadow: 0 0 15px var(--glow-shadow);
+    color: var(--accent-cyan-glow);
+    border-color: var(--accent-cyan-glow);
+    box-shadow: 0 0 10px var(--glow-shadow);
+    transform: translateY(-2px);
 }
 
-/* --- Footer --- */
+
+/* Footer */
 .footer {
     background-color: #1c222d;
     color: #e0e0e0;
@@ -518,5 +528,329 @@ h1, h2, h3, h4, h5, h6 {
     .category-grid,
     .highlighted-tools-grid {
         grid-template-columns: 1fr; /* Single column on small screens */
+    }
+}
+
+/* PDF Merger specific styles (moved to pdfmerger.html's head if preferred, or kept here if shared theme) */
+/* Keeping them here for consistency since they share the main style.css */
+.pdf-merge-container {
+    padding: 6rem 0;
+    background-color: #0d0f14; /* Main background color */
+    color: #e0e0e0;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align content to top */
+    flex-direction: column;
+    text-align: center;
+}
+
+.pdf-merge-container .container {
+    width: 100%; /* Ensure container fills available space */
+    max-width: 900px;
+    background-color: #1c222d; /* Card background */
+    border-radius: 12px;
+    padding: 3rem;
+    box-shadow: 0 0 25px rgba(66, 248, 245, 0.2); /* Soft glow */
+    border: 1px solid rgba(66, 248, 245, 0.3);
+    margin: 2rem auto; /* Center the container */
+}
+
+.pdf-merge-container h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.8rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 10px var(--glow-shadow);
+}
+
+.pdf-merge-container p {
+    font-size: 1.1rem;
+    color: #c0c0c0;
+    margin-bottom: 2rem;
+}
+
+.tool-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    border: 2px dashed rgba(66, 248, 245, 0.4); /* Glow dashed border */
+    border-radius: 8px;
+    background-color: #12151a; /* Deeper background for sections */
+}
+
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.upload-section.drag-over {
+    background-color: rgba(66, 248, 245, 0.1);
+    border-color: var(--accent-cyan-glow);
+}
+
+.upload-btn {
+    background-color: var(--accent-cyan-glow);
+    color: #0d0f14; /* Dark text on bright button */
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+    box-shadow: 0 0 15px rgba(66, 248, 245, 0.5);
+}
+
+.upload-btn:hover {
+    background-color: #35d8d5; /* Slightly darker cyan */
+    box-shadow: 0 0 25px rgba(66, 248, 245, 0.8);
+    transform: translateY(-2px);
+}
+
+.file-instructions {
+    margin-top: 15px;
+    color: #888;
+    font-size: 1em;
+}
+
+.file-list-section {
+    border: none;
+    background: none;
+    padding: 0;
+}
+
+.section-heading {
+    color: var(--accent-cyan-glow);
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 5px var(--glow-shadow);
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    border: 1px solid rgba(66, 248, 245, 0.2);
+    border-radius: 8px;
+    max-height: 350px; /* Increased height */
+    overflow-y: auto;
+    background-color: #0d0f14; /* Darker background for list */
+}
+
+.file-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(66, 248, 245, 0.1);
+    background-color: #1c222d; /* Card background for items */
+    font-size: 0.95em;
+    color: #e0e0e0;
+    cursor: grab; /* Indicates draggable */
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.file-list-item:last-child {
+    border-bottom: none;
+}
+
+.file-list-item:hover {
+    background-color: #2a303d;
+    transform: scale(1.01);
+}
+
+.file-list-item.dragging {
+    opacity: 0.7;
+    border: 2px dashed var(--accent-cyan-glow);
+    box-shadow: 0 0 15px var(--glow-shadow);
+    transform: scale(1.02);
+}
+
+.file-name {
+    flex-grow: 1;
+    text-align: left;
+    margin-right: 15px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.remove-file-btn {
+    background-color: #dc3545; /* Red for remove */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+}
+
+.remove-file-btn:hover {
+    background-color: #c82333;
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.6);
+}
+
+.actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.btn-primary-glow { /* General glowing button style */
+    background-color: #12151a;
+    color: var(--accent-cyan-glow);
+    padding: 1rem 2.5rem;
+    border: 2px solid var(--accent-cyan-glow);
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px var(--glow-shadow);
+    cursor: pointer;
+}
+
+.btn-primary-glow:hover {
+    background-color: var(--accent-cyan-glow);
+    color: #12151a;
+    box-shadow: 0 0 20px var(--glow-shadow), 0 0 30px var(--accent-cyan-glow);
+    transform: translateY(-3px);
+}
+
+.btn-secondary-glow {
+    background-color: #1c222d; /* Darker background */
+    color: #e0e0e0;
+    padding: 1rem 2.5rem;
+    border: 2px solid #5a6268; /* Subtle border */
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.btn-secondary-glow:hover {
+    background-color: #2a303d;
+    color: var(--accent-cyan-glow);
+    border-color: var(--accent-cyan-glow);
+    box-shadow: 0 0 15px var(--glow-shadow);
+    transform: translateY(-3px);
+}
+
+.merge-btn:disabled, .merge-btn:disabled:hover {
+    background-color: #2a303d; /* Darker disabled */
+    color: #666;
+    border-color: #444;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.status-message {
+    margin-top: 25px;
+    font-style: italic;
+    color: var(--accent-cyan-glow);
+    font-size: 1.1em;
+    text-shadow: 0 0 5px rgba(66, 248, 245, 0.2);
+}
+
+.loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid var(--accent-cyan-glow);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 30px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.download-btn {
+    margin-top: 25px;
+    display: inline-block; /* To make it centered like a block element, but fit content */
+}
+
+/* Back to main page button on PDF merger page */
+.back-to-main-btn {
+    background-color: #1c222d;
+    color: #e0e0e0;
+    padding: 0.8rem 1.5rem;
+    border: 2px solid #5a6268;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    margin-bottom: 2rem; /* Space below button */
+    align-self: flex-start; /* Align left */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.back-to-main-btn:hover {
+    background-color: #2a303d;
+    color: var(--accent-cyan-glow);
+    border-color: var(--accent-cyan-glow);
+    box-shadow: 0 0 15px var(--glow-shadow);
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments for pdfmerger.html */
+@media (max-width: 768px) {
+    .pdf-merge-container .container {
+        padding: 2rem;
+        margin: 1rem auto;
+    }
+
+    .pdf-merge-container h2 {
+        font-size: 2rem;
+    }
+
+    .upload-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .file-list-item {
+        padding: 10px 15px;
+    }
+
+    .remove-file-btn {
+        padding: 5px 8px;
+        font-size: 0.75em;
+    }
+
+    .actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-primary-glow, .btn-secondary-glow {
+        width: 100%;
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .back-to-main-btn {
+        width: calc(100% - 3rem); /* Adjust for padding on page */
+        margin-left: 1.5rem;
+        margin-right: 1.5rem;
+        justify-content: center;
     }
 }

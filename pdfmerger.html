@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merge - ToolsTry</title>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Orbitron:wght@440;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- General Body & Variable Definitions (Crucial for page sizing) --- */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0f14;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            /* Define CSS variables for heights (approximate - adjust if your navbar/footer are different sizes) */
+            --navbar-height: 70px; /* Based on your navbar's actual height */
+            --footer-height: 100px; /* Based on your footer's actual height */
+        }
+
+        /* Accent Cyan Glow Color Variables */
+        :root {
+            --accent-cyan-glow: #42f8f5;
+            --glow-shadow: rgba(66, 248, 245, 0.6);
+            --dark-bg: #0d0f14;
+            --card-bg: #1c222d;
+            --input-bg: #12151a;
+            --text-color: #e0e0e0;
+            --subtle-text: #c0c0c0;
+            --border-color: rgba(66, 248, 245, 0.3);
+            --dashed-border-color: rgba(66, 248, 245, 0.4);
+        }
+
+        /* --- Global Reusable Styles (from your common style.css) --- */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.4);
+            height: var(--navbar-height); /* Set a fixed height for calculation */
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .site-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--accent-cyan-glow);
+            text-decoration: none;
+            font-weight: 700;
+            text-shadow: 0 0 10px var(--glow-shadow);
+            letter-spacing: -0.05em;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .site-brand:hover {
+            text-shadow: 0 0 15px var(--glow-shadow), 0 0 25px var(--accent-cyan-glow);
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-item .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            position: relative;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .nav-item .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-cyan-glow);
+            transition: width 0.3s ease;
+        }
+
+        .nav-item .nav-link:hover {
+            color: var(--accent-cyan-glow);
+            text-shadow: 0 0 5px var(--glow-shadow);
+        }
+
+        .nav-item .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 2rem;
+            color: var(--accent-cyan-glow);
+            cursor: pointer;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--dark-bg);
+            color: var(--subtle-text);
+            padding: 2rem 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            height: var(--footer-height); /* Set a fixed height for calculation */
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            flex-shrink: 0; /* Prevents footer from shrinking */
+        }
+
+        .footer p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a {
+            color: var(--subtle-text);
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-cyan-glow);
+        }
+
+        /* --- PDF Merger Page Specific Styles --- */
+
+        /* Main content wrapper for PDF merger page to manage vertical space */
+        .pdf-merge-main {
+            padding: 2rem 0; /* Reduced vertical padding from 6rem */
+            background-color: var(--dark-bg); /* Main background color */
+            color: var(--text-color);
+            /* Use flexbox to center content vertically on the page, filling available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            /* Calculate min-height to fill the remaining viewport height */
+            min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
+            box-sizing: border-box; /* Include padding in height calculation */
+        }
+
+        /* Inner container for the tool card and back button to control max-width */
+        .pdf-merge-content-wrapper {
+            width: 100%;
+            max-width: 800px; /* Max width for the card content */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content within this wrapper */
+            margin: 0 auto; /* Center horizontally */
+            padding: 0 1.5rem; /* Add horizontal padding from the container class */
+            box-sizing: border-box;
+        }
+
+        /* Styling for the actual tool card/content area */
+        .pdf-merge-card-inner {
+            background-color: var(--card-bg); /* Card background */
+            border-radius: 12px;
+            padding: 1.5rem 2rem; /* Reduced padding from 3rem */
+            box-shadow: 0 0 25px rgba(66, 248, 245, 0.2); /* Soft glow */
+            border: 1px solid var(--border-color);
+            text-align: center;
+            width: 100%; /* Make it fill the content wrapper's width */
+            box-sizing: border-box;
+        }
+
+        .pdf-merge-card-inner h2 {
+            font-size: 2.2rem; /* Reduced font size from 2.8rem */
+            margin-bottom: 1rem; /* Reduced margin */
+            color: var(--accent-cyan-glow);
+            text-shadow: 0 0 10px var(--glow-shadow);
+        }
+
+        .pdf-merge-card-inner p {
+            font-size: 1rem; /* Reduced font size from 1.1rem */
+            color: var(--subtle-text);
+            margin-bottom: 1.5rem; /* Reduced margin from 2rem */
+        }
+
+        /* Tool sections (upload, file list) */
+        .tool-section {
+            margin-bottom: 1.2rem; /* Reduced margin from 25px */
+            padding: 1rem; /* Reduced padding from 20px */
+            border: 2px dashed var(--dashed-border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+        }
+
+        .upload-section {
+            min-height: 120px; /* Reduced min-height from 180px */
+        }
+
+        .upload-btn {
+            background-color: var(--input-bg);
+            color: var(--accent-cyan-glow);
+            padding: 0.8rem 1.8rem; /* Reduced padding from 1rem 2.5rem */
+            border: 2px solid var(--accent-cyan-glow);
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem; /* Reduced font size from 1.1rem */
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--glow-shadow);
+            cursor: pointer;
+            display: inline-block; /* Essential for padding/margin on labels */
+        }
+
+        .upload-btn:hover {
+            background-color: var(--accent-cyan-glow);
+            color: var(--input-bg);
+            box-shadow: 0 0 20px var(--glow-shadow), 0 0 30px var(--accent-cyan-glow);
+            transform: translateY(-3px);
+        }
+
+        .file-instructions {
+            margin-top: 0.8rem; /* Reduced margin from 15px */
+            font-size: 0.9em; /* Reduced font size from 0.95em */
+            color: var(--subtle-text);
+        }
+
+        .file-list-section {
+            margin-top: 0; /* Remove top margin */
+        }
+
+        .section-heading {
+            font-size: 1.1rem; /* Reduced font size from 1.3rem */
+            margin-bottom: 0.8rem; /* Reduced margin from 1rem */
+            color: var(--accent-cyan-glow);
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            max-height: 200px; /* Significantly reduced max-height for list to fit */
+            margin: 1rem 0; /* Reduced margin from 20px */
+            border: 1px solid rgba(66, 248, 245, 0.2);
+            border-radius: 8px;
+            overflow-y: auto; /* Ensure list is scrollable if many files */
+            background-color: var(--dark-bg);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        .file-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px; /* Reduced padding from 15px 20px */
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9em; /* Reduced font size from 0.95em */
+            background-color: var(--dark-bg);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            cursor: grab; /* Indicates draggable */
+        }
+
+        .file-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-list-item:hover {
+            background-color: #1a1e26;
+            transform: translateY(-2px);
+        }
+
+        .file-list-item.dragging {
+            opacity: 0.5;
+            background-color: #2b303d;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transform: scale(1.02);
+            cursor: grabbing;
+        }
+
+        .remove-file-btn {
+            background-color: #dc3545; /* Red for remove */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 8px; /* Reduced padding from 8px 12px */
+            font-size: 0.75em; /* Reduced font size from 0.85em */
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.2s ease;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+        }
+
+        .remove-file-btn:hover {
+            background-color: #c82333;
+            box-shadow: 0 0 12px rgba(220, 53, 69, 0.6);
+        }
+
+        .actions {
+            margin-top: 1.5rem; /* Reduced margin from 30px */
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Reduced gap from 20px */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+
+        /* General glowing button style (applied to merge, download) */
+        .btn-primary-glow {
+            background-color: var(--input-bg);
+            color: var(--accent-cyan-glow);
+            padding: 0.8rem 1.8rem; /* Reduced padding from 1rem 2.5rem */
+            border: 2px solid var(--accent-cyan-glow);
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem; /* Reduced font size from 1.1rem */
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--glow-shadow);
+            cursor: pointer;
+            display: inline-block; /* Ensures text-decoration doesn't apply to the container */
+        }
+
+        .btn-primary-glow:hover {
+            background-color: var(--accent-cyan-glow);
+            color: var(--input-bg);
+            box-shadow: 0 0 20px var(--glow-shadow), 0 0 30px var(--accent-cyan-glow);
+            transform: translateY(-3px);
+        }
+
+        /* Secondary button style (applied to clear) */
+        .btn-secondary-glow {
+            background-color: var(--card-bg); /* Darker background */
+            color: var(--text-color);
+            padding: 0.8rem 1.8rem; /* Reduced padding from 1rem 2.5rem */
+            border: 2px solid #5a6268; /* Subtle border */
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1rem; /* Reduced font size from 1.1rem */
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            display: inline-block; /* Ensures consistent styling */
+        }
+
+        .btn-secondary-glow:hover {
+            background-color: #2a303d;
+            color: var(--accent-cyan-glow);
+            border-color: var(--accent-cyan-glow);
+            box-shadow: 0 0 15px var(--glow-shadow);
+            transform: translateY(-3px);
+        }
+
+        .merge-btn:disabled, .merge-btn:disabled:hover {
+            background-color: #2a303d; /* Darker disabled */
+            color: #666;
+            border-color: #444;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-message {
+            margin-top: 1.2rem; /* Reduced margin from 25px */
+            font-style: italic;
+            color: var(--accent-cyan-glow);
+            font-size: 0.95em; /* Reduced font size from 1.1em */
+            text-shadow: 0 0 5px rgba(66, 248, 245, 0.2);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid var(--accent-cyan-glow);
+            border-radius: 50%;
+            width: 30px; /* Smaller spinner from 40px */
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1.5rem auto; /* Reduced margin from 30px */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .download-btn {
+            margin-top: 1.2rem; /* Reduced margin from 25px */
+            display: inline-block;
+        }
+
+        /* Back to main page button on PDF merger page */
+        .back-to-main-btn {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            padding: 0.6rem 1.2rem; /* Smaller padding from 0.8rem 1.5rem */
+            border: 2px solid #5a6268;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem; /* Smaller font size from 1.1rem */
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1.5rem; /* Adjust space above the main card */
+            align-self: flex-start; /* Aligned to left of content wrapper */
+            margin-left: auto; /* Auto margins to center horizontally within content wrapper */
+            margin-right: auto;
+            display: flex; /* Make it a flex container to align icon and text */
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-to-main-btn:hover {
+            background-color: #2a303d;
+            color: var(--accent-cyan-glow);
+            border-color: var(--accent-cyan-glow);
+            box-shadow: 0 0 15px var(--glow-shadow);
+            transform: translateY(-2px);
+        }
+
+        /* --- Responsive Adjustments for pdfmerger.html --- */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background-color: var(--dark-bg);
+                position: absolute;
+                top: var(--navbar-height); /* Position below navbar */
+                left: 0;
+                padding: 1rem 0;
+                border-bottom: 1px solid var(--border-color);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .nav-item {
+                text-align: center;
+                margin: 0.5rem 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .pdf-merge-main {
+                padding: 1rem 0; /* Further reduce padding */
+            }
+
+            .pdf-merge-content-wrapper {
+                padding: 0 1rem; /* Adjust horizontal padding on small screens */
+            }
+
+            .pdf-merge-card-inner {
+                padding: 1.5rem; /* Further reduce padding */
+            }
+
+            .pdf-merge-card-inner h2 {
+                font-size: 1.8rem;
+            }
+
+            .pdf-merge-card-inner p {
+                font-size: 0.9rem;
+            }
+
+            .upload-section {
+                min-height: 100px;
+            }
+
+            .upload-btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            .file-list {
+                max-height: 150px; /* Further reduce max-height on very small screens */
+            }
+
+            .actions {
+                flex-direction: column; /* Stack buttons vertically */
+                gap: 10px;
+            }
+
+            .btn-primary-glow, .btn-secondary-glow {
+                width: 100%; /* Full width buttons */
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .back-to-main-btn {
+                margin-left: auto; /* Center button on smallest screens */
+                margin-right: auto;
+                width: 100%; /* Full width */
+                box-sizing: border-box;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+                justify-content: center; /* Center content within the button */
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a class="site-brand" href="index.html">ToolsTry</a>
+            <div class="menu-toggle" id="mobile-menu-toggle">&#9776;</div>
+            <ul class="nav-menu" id="main-nav-menu">
+                <li class="nav-item"><a class="nav-link" href="index.html#document-tools">Document Tools</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#image-tools">Image Tools</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#office-tools">Office Tools</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#audio-video-tools">Audio & Video</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#developer-tools">Developer Tools</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#text-web-tools">Text & Web Tools</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="pdf-merge-main">
+        <div class="container pdf-merge-content-wrapper">
+            <a href="index.html" class="back-to-main-btn">&larr; Back to ToolsTry Home</a>
+
+            <div class="pdf-merge-card-inner">
+                <h2>PDF Merge</h2>
+                <p>Effortlessly combine multiple PDF documents into one single, organized file.</p>
+
+                <div class="tool-section upload-section">
+                    <label for="pdf-input" class="upload-btn">
+                        Select PDF Files
+                        <input type="file" id="pdf-input" accept=".pdf" multiple style="display: none;">
+                    </label>
+                    <p class="file-instructions">Drag & drop PDF files here, or click to select.</p>
+                </div>
+
+                <div class="tool-section file-list-section" style="display: none;">
+                    <h3 class="section-heading">Selected Files (Drag to reorder):</h3>
+                    <ul id="pdf-file-list" class="file-list">
+                        </ul>
+                    <div class="actions">
+                        <button id="merge-pdf-btn" class="btn-primary-glow merge-btn" disabled>Merge PDFs</button>
+                        <button id="clear-pdf-files-btn" class="btn-secondary-glow clear-btn" style="display: none;">Clear All</button>
+                    </div>
+                    <div id="pdf-merge-status" class="status-message"></div>
+                    <div id="pdf-merge-loading" class="loading-spinner" style="display: none;"></div>
+                    <a id="download-merged-pdf" class="btn-primary-glow download-btn" style="display: none;" download="merged_document.pdf">Download Merged PDF</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="pdfmerger.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
