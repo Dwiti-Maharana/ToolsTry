@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Converter - ToolsTry</title>
+    
+    <!-- External Libraries for Video Conversion -->
+    <!-- This loads the FFmpeg WebAssembly library. It's a large file (~30MB) and will be cached by the browser after the first load. -->
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base Styles & Theme --- */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0f14;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        :root {
+            --accent-cyan-glow: #42f8f5;
+            --glow-shadow: rgba(66, 248, 245, 0.6);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* --- Navbar & Footer --- */
+        .navbar { background-color: #1c222d; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .navbar-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; }
+        .site-brand { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 700; color: #ffffff; text-decoration: none; text-shadow: 0 0 8px var(--glow-shadow); }
+        .footer { background-color: #1c222d; text-align: center; padding: 2rem 0; font-size: 0.9rem; border-top: 1px solid rgba(66, 248, 245, 0.1); }
+
+        /* --- General Tool Page Layout --- */
+        .tool-page-main { padding: 2rem 0; }
+        .tool-page-content-wrapper { width: 100%; max-width: 900px; margin: auto; }
+        .back-to-main-btn { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #1c222d; color: #e0e0e0; padding: 0.8rem 1.5rem; border: 2px solid #5a6268; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .back-to-main-btn:hover { background-color: #2a303d; color: var(--accent-cyan-glow); border-color: var(--accent-cyan-glow); transform: translateY(-2px); }
+
+        /* --- Video Converter Specific Styles --- */
+        .tool-page-card {
+            background-color: #1c222d;
+            border-radius: 12px;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 0 25px rgba(66, 248, 245, 0.2);
+            border: 1px solid rgba(66, 248, 245, 0.3);
+            text-align: center;
+        }
+        .tool-page-card h2 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--accent-cyan-glow); text-shadow: 0 0 10px var(--glow-shadow); }
+        .tool-page-card p { font-size: 1.1rem; color: #c0c0c0; margin-bottom: 2rem; }
+
+        .upload-section {
+            border: 2px dashed rgba(66, 248, 245, 0.4);
+            border-radius: 8px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-section.drag-over { background-color: rgba(66, 248, 245, 0.1); border-color: var(--accent-cyan-glow); }
+        .upload-btn {
+            background-color: var(--accent-cyan-glow);
+            color: #0d0f14;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-block;
+            box-shadow: 0 0 15px rgba(66, 248, 245, 0.5);
+        }
+        .file-instructions { margin-top: 1rem; color: #888; }
+        
+        .file-info {
+            background-color: #12151a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .options-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .styled-select {
+            background-color: #1c222d;
+            color: var(--accent-cyan-glow);
+            border: 1px solid rgba(66, 248, 245, 0.5);
+            padding: 0.6rem 1rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .actions-container { display: flex; justify-content: center; gap: 1rem; }
+        .btn-action {
+            background-color: #12151a;
+            color: var(--accent-cyan-glow);
+            padding: 0.8rem 1.5rem;
+            border: 1px solid var(--accent-cyan-glow);
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-action:disabled { background-color: #3a414c; color: #666; border-color: #444; cursor: not-allowed; }
+
+        .progress-container { margin-top: 2rem; }
+        #status-message { font-style: italic; color: var(--accent-cyan-glow); min-height: 24px; }
+        .log-output {
+            background-color: #0a0c10;
+            color: #ccc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            border: 1px solid #3a414c;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            white-space: pre-wrap; /* Allows text to wrap */
+            word-break: break-all;
+        }
+        
+        .output-container { margin-top: 1rem; }
+        #download-btn {
+            background-color: var(--accent-cyan-glow);
+            color: #0d0f14;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a class="site-brand" href="index.html">ToolsTry</a>
+        </div>
+    </nav>
+
+    <main class="tool-page-main">
+        <div class="container tool-page-content-wrapper">
+            <a href="index.html" class="back-to-main-btn">← Back to ToolsTry Home</a>
+
+            <div class="tool-page-card">
+                <h2>Video Converter</h2>
+                <p>Convert video files to different formats directly in your browser. All processing is done on your computer.</p>
+
+                <!-- Step 1: Upload -->
+                <div id="upload-container">
+                    <div class="upload-section">
+                        <label for="file-input" class="upload-btn">Select Video File</label>
+                        <input type="file" id="file-input" accept="video/*" style="display: none;">
+                        <p class="file-instructions">or drag & drop a video file here</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Convert & Download (hidden initially) -->
+                <div id="converter-ui" style="display: none;">
+                    <div class="file-info">
+                        <strong>File:</strong> <span id="file-name-display"></span><br>
+                        <strong>Size:</strong> <span id="file-size-display"></span>
+                    </div>
+
+                    <div class="options-container">
+                        <label for="format-select">Convert to:</label>
+                        <select id="format-select" class="styled-select">
+                            <option value="mp4">MP4</option>
+                            <option value="mkv">MKV</option>
+                            <option value="avi">AVI</option>
+                            <option value="mov">MOV</option>
+                            <option value="webm">WEBM</option>
+                            <option value="gif">GIF (Animated)</option>
+                            <option value="mp3">MP3 (Audio Only)</option>
+                        </select>
+                    </div>
+
+                    <div class="actions-container">
+                        <button id="convert-btn" class="btn-action">Convert</button>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <p id="status-message">Ready to convert.</p>
+                        <div id="log-output" class="log-output">Conversion logs will appear here...</div>
+                    </div>
+
+                    <div id="output-container" style="display: none;">
+                        <a href="#" id="download-btn" download>Download Converted File</a>
+                        <button id="reset-btn" class="btn-action" style="margin-top: 1rem;">Convert Another File</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- UI Elements ---
+        const uploadContainer = document.getElementById('upload-container');
+        const fileInput = document.getElementById('file-input');
+        const converterUI = document.getElementById('converter-ui');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileSizeDisplay = document.getElementById('file-size-display');
+        const convertBtn = document.getElementById('convert-btn');
+        const formatSelect = document.getElementById('format-select');
+        const statusMessage = document.getElementById('status-message');
+        const logOutput = document.getElementById('log-output');
+        const outputContainer = document.getElementById('output-container');
+        const downloadBtn = document.getElementById('download-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // --- FFmpeg Setup ---
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({
+            log: false, // We will handle logging manually
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+        });
+        
+        let uploadedFile = null;
+
+        // --- Event Listeners ---
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        uploadContainer.addEventListener('dragover', (e) => { e.preventDefault(); uploadContainer.classList.add('drag-over'); });
+        uploadContainer.addEventListener('dragleave', () => uploadContainer.classList.remove('drag-over'));
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.remove('drag-over');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        convertBtn.addEventListener('click', convertVideo);
+        resetBtn.addEventListener('click', resetUI);
+        
+        // --- Core Functions ---
+        function handleFile(file) {
+            if (!file) return;
+            uploadedFile = file;
+            
+            fileNameDisplay.textContent = file.name;
+            fileSizeDisplay.textContent = formatBytes(file.size);
+
+            uploadContainer.style.display = 'none';
+            converterUI.style.display = 'block';
+            statusMessage.textContent = 'Ready to convert.';
+            logOutput.innerHTML = 'Conversion logs will appear here...';
+            convertBtn.disabled = false;
+        }
+        
+        function resetUI() {
+            uploadedFile = null;
+            fileInput.value = '';
+            converterUI.style.display = 'none';
+            outputContainer.style.display = 'none';
+            uploadContainer.style.display = 'block';
+        }
+        
+        function updateLog(message) {
+            logOutput.innerHTML += message + '\n';
+            logOutput.scrollTop = logOutput.scrollHeight; // Auto-scroll
+        }
+
+        async function convertVideo() {
+            if (!uploadedFile) {
+                alert('Please select a file first.');
+                return;
+            }
+
+            convertBtn.disabled = true;
+            formatSelect.disabled = true;
+            outputContainer.style.display = 'none';
+            logOutput.innerHTML = ''; // Clear previous logs
+
+            try {
+                statusMessage.textContent = 'Loading FFmpeg library (this may take a moment)...';
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                }
+
+                statusMessage.textContent = 'Writing file to memory...';
+                ffmpeg.FS('writeFile', uploadedFile.name, await fetchFile(uploadedFile));
+
+                statusMessage.textContent = 'Converting... Please wait.';
+                
+                // Setup logger
+                ffmpeg.setLogger(({ type, message }) => {
+                    if (type !== 'info') { // 'info' logs are too verbose
+                       updateLog(message);
+                    }
+                });
+                
+                const outputFormat = formatSelect.value;
+                const outputFilename = `output.${outputFormat}`;
+                
+                await ffmpeg.run('-i', uploadedFile.name, outputFilename);
+
+                statusMessage.textContent = 'Conversion complete!';
+                const data = ffmpeg.FS('readFile', outputFilename);
+                
+                const videoBlob = new Blob([data.buffer], { type: `video/${outputFormat}` });
+                const videoUrl = URL.createObjectURL(videoBlob);
+                
+                downloadBtn.href = videoUrl;
+                downloadBtn.download = outputFilename;
+                outputContainer.style.display = 'block';
+
+                // Clean up virtual file system
+                ffmpeg.FS('unlink', uploadedFile.name);
+                ffmpeg.FS('unlink', outputFilename);
+
+            } catch (error) {
+                statusMessage.textContent = 'An error occurred during conversion.';
+                updateLog(error.toString());
+                console.error(error);
+            } finally {
+                convertBtn.disabled = false;
+                formatSelect.disabled = false;
+            }
+        }
+        
+        // --- Helper Function ---
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    });
+    </script>
+</body>
+</html>

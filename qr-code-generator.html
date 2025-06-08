@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator - ToolsTry</title>
+    
+    <!-- External Library for QR Code Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base Styles & Theme --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0d0f14; color: #e0e0e0; line-height: 1.6; }
+        :root { --accent-cyan-glow: #42f8f5; --glow-shadow: rgba(66, 248, 245, 0.6); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* --- Navbar & Footer --- */
+        .navbar { background-color: #1c222d; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .navbar-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; }
+        .site-brand { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 700; color: #ffffff; text-decoration: none; text-shadow: 0 0 8px var(--glow-shadow); }
+        .footer { background-color: #1c222d; text-align: center; padding: 2rem 0; font-size: 0.9rem; border-top: 1px solid rgba(66, 248, 245, 0.1); }
+
+        /* --- General Tool Page Layout --- */
+        .tool-page-main { padding: 2rem 0; }
+        .tool-page-content-wrapper { width: 100%; max-width: 1000px; margin: auto; }
+        .back-to-main-btn { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #1c222d; color: #e0e0e0; padding: 0.8rem 1.5rem; border: 2px solid #5a6268; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .back-to-main-btn:hover { background-color: #2a303d; color: var(--accent-cyan-glow); border-color: var(--accent-cyan-glow); transform: translateY(-2px); }
+        .tool-page-card { background-color: #1c222d; border-radius: 12px; padding: 2rem 2.5rem; box-shadow: 0 0 25px rgba(66, 248, 245, 0.2); border: 1px solid rgba(66, 248, 245, 0.3); }
+        .tool-page-card h2 { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 2.5rem; margin-bottom: 1rem; color: var(--accent-cyan-glow); text-shadow: 0 0 10px var(--glow-shadow); }
+        .tool-page-card p { font-size: 1.1rem; text-align: center; color: #c0c0c0; margin-bottom: 2.5rem; }
+
+        /* --- QR Generator Specific Styles --- */
+        .qr-layout {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .qr-controls {
+            flex: 1;
+            min-width: 300px;
+        }
+        .qr-preview-area {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #12151a;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+        #qr-canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+        }
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        #qr-text {
+            width: 100%;
+            height: 100px;
+            background-color: #12151a;
+            border: 1px solid #3a414c;
+            color: #e0e0e0;
+            padding: 0.7rem;
+            border-radius: 5px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .slider-group span {
+            color: var(--accent-cyan-glow);
+            font-weight: bold;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 70%;
+            height: 8px;
+            background: #2a303d;
+            outline: none;
+            border-radius: 5px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-cyan-glow);
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--glow-shadow);
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border-radius: 50%;
+            border: 2px solid #5a6268;
+        }
+        input[type="color"]::-moz-color-swatch {
+            border-radius: 50%;
+            border: 2px solid #5a6268;
+        }
+        .color-group {
+            display: flex;
+            justify-content: space-around;
+        }
+        .color-picker { text-align: center; }
+        .styled-select {
+            width: 100%;
+            background-color: #12151a;
+            color: var(--accent-cyan-glow);
+            border: 1px solid #3a414c;
+            padding: 0.7rem;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        #download-btn {
+            margin-top: 1.5rem;
+            background-color: var(--accent-cyan-glow);
+            color: #0d0f14;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        #download-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(66, 248, 245, 0.4); }
+
+        @media(max-width: 768px) {
+            .qr-preview-area { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a class="site-brand" href="index.html">ToolsTry</a>
+        </div>
+    </nav>
+
+    <main class="tool-page-main">
+        <div class="container tool-page-content-wrapper">
+            <a href="index.html" class="back-to-main-btn">← Back to ToolsTry Home</a>
+
+            <div class="tool-page-card">
+                <h2>QR Code Generator</h2>
+                <p>Create custom QR codes for URLs, text, and more. Adjust colors, size, and quality in real-time.</p>
+                
+                <div class="qr-layout">
+                    <!-- Left Column: Controls -->
+                    <div class="qr-controls">
+                        <div class="control-group">
+                            <label for="qr-text">Text or URL</label>
+                            <textarea id="qr-text" placeholder="Enter text or a URL here..."></textarea>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="slider-group">
+                                <label for="qr-size">Size</label>
+                                <span id="qr-size-value">256px</span>
+                            </div>
+                            <input type="range" id="qr-size" min="100" max="1000" value="256" step="8">
+                        </div>
+
+                        <div class="control-group">
+                            <label>Colors</label>
+                            <div class="color-group">
+                                <div class="color-picker">
+                                    <input type="color" id="qr-fg-color" value="#000000">
+                                    <label for="qr-fg-color">Foreground</label>
+                                </div>
+                                <div class="color-picker">
+                                    <input type="color" id="qr-bg-color" value="#ffffff">
+                                    <label for="qr-bg-color">Background</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="qr-level">Error Correction Level</label>
+                            <select id="qr-level" class="styled-select">
+                                <option value="L">Low (7% recovery)</option>
+                                <option value="M" selected>Medium (15% recovery)</option>
+                                <option value="Q">Quartile (25% recovery)</option>
+                                <option value="H">High (30% recovery)</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                             <div class="slider-group">
+                                <label for="qr-padding">Padding / Quiet Zone</label>
+                                <span id="qr-padding-value">10px</span>
+                            </div>
+                            <input type="range" id="qr-padding" min="0" max="50" value="10" step="1">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Preview -->
+                    <div class="qr-preview-area">
+                        <canvas id="qr-canvas"></canvas>
+                        <a href="#" id="download-btn" download="qrcode.png">Download PNG</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- UI Elements ---
+        const qrText = document.getElementById('qr-text');
+        const qrSize = document.getElementById('qr-size');
+        const qrSizeValue = document.getElementById('qr-size-value');
+        const qrPadding = document.getElementById('qr-padding');
+        const qrPaddingValue = document.getElementById('qr-padding-value');
+        const qrFgColor = document.getElementById('qr-fg-color');
+        const qrBgColor = document.getElementById('qr-bg-color');
+        const qrLevel = document.getElementById('qr-level');
+        const qrCanvas = document.getElementById('qr-canvas');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // --- Core Function ---
+        const generateQR = () => {
+            const text = qrText.value || 'https://toolstry.com'; // Default value
+            const size = parseInt(qrSize.value);
+            const padding = parseInt(qrPadding.value);
+            
+            // The `qrious` library is available globally from the CDN script
+            new QRious({
+                element: qrCanvas,
+                value: text,
+                size: size,
+                padding: padding,
+                level: qrLevel.value,
+                foreground: qrFgColor.value,
+                background: qrBgColor.value,
+            });
+
+            // Update the download link
+            updateDownloadLink();
+        };
+        
+        // --- Helper Functions ---
+        const updateDownloadLink = () => {
+            // Use a timeout to ensure the canvas has finished drawing
+            setTimeout(() => {
+                const dataUrl = qrCanvas.toDataURL('image/png');
+                downloadBtn.href = dataUrl;
+            }, 50);
+        };
+        
+        const updateSliderValue = (slider, display) => {
+            display.textContent = `${slider.value}px`;
+        };
+        
+        // --- Event Listeners ---
+        const controls = [qrText, qrSize, qrPadding, qrFgColor, qrBgColor, qrLevel];
+        controls.forEach(control => control.addEventListener('input', generateQR));
+        
+        qrSize.addEventListener('input', () => updateSliderValue(qrSize, qrSizeValue));
+        qrPadding.addEventListener('input', () => updateSliderValue(qrPadding, qrPaddingValue));
+
+        // --- Initial Generation ---
+        updateSliderValue(qrSize, qrSizeValue);
+        updateSliderValue(qrPadding, qrPaddingValue);
+        generateQR();
+    });
+    </script>
+</body>
+</html>

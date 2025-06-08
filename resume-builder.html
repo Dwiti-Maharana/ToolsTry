@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder - ToolsTry</title>
+    <!-- External Libraries for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base Styles & Theme --- */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0f14;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        :root {
+            --accent-cyan-glow: #42f8f5;
+            --glow-shadow: rgba(66, 248, 245, 0.6);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* --- Navbar & Footer (Consistent with your site) --- */
+        .navbar { background-color: #1c222d; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .navbar-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; }
+        .site-brand { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 700; color: #ffffff; text-decoration: none; text-shadow: 0 0 8px var(--glow-shadow); }
+        .footer { background-color: #1c222d; text-align: center; padding: 2rem 0; font-size: 0.9rem; border-top: 1px solid rgba(66, 248, 245, 0.1); }
+
+        /* --- General Tool Page Layout --- */
+        .tool-page-main { padding: 2rem 0; }
+        .tool-page-content-wrapper { width: 100%; max-width: 1400px; margin: auto; }
+        .back-to-main-btn { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #1c222d; color: #e0e0e0; padding: 0.8rem 1.5rem; border: 2px solid #5a6268; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .back-to-main-btn:hover { background-color: #2a303d; color: var(--accent-cyan-glow); border-color: var(--accent-cyan-glow); transform: translateY(-2px); }
+        
+        /* --- Resume Builder Specific Layout --- */
+        #resume-builder-layout {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        #resume-form {
+            flex: 1;
+            min-width: 400px;
+            background-color: #1c222d;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(66, 248, 245, 0.2);
+        }
+        #resume-preview-container {
+            flex: 1;
+            min-width: 400px;
+            position: sticky;
+            top: 100px; /* Adjust based on your navbar height */
+            align-self: flex-start;
+        }
+
+        /* --- Form Styling --- */
+        #resume-form h3 {
+            color: var(--accent-cyan-glow);
+            border-bottom: 1px solid rgba(66, 248, 245, 0.3);
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            background-color: #12151a;
+            border: 1px solid #3a414c;
+            color: #e0e0e0;
+            padding: 0.7rem;
+            border-radius: 5px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-cyan-glow);
+            box-shadow: 0 0 10px rgba(66, 248, 245, 0.3);
+        }
+        .dynamic-section-item {
+            border: 1px solid #3a414c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .btn-add, .btn-remove {
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-add {
+            background-color: #12151a;
+            color: var(--accent-cyan-glow);
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--accent-cyan-glow);
+            font-weight: 500;
+        }
+        .btn-add:hover {
+            background-color: var(--accent-cyan-glow);
+            color: #12151a;
+        }
+        .btn-remove {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            line-height: 24px;
+            text-align: center;
+        }
+        
+        /* --- Resume Preview Styling --- */
+        #resume-output {
+            background: white;
+            color: #333;
+            padding: 2.5rem;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            min-height: 11in; /* A4-like aspect ratio */
+        }
+        #resume-output h1, #resume-output h2, #resume-output h3, #resume-output h4 {
+            color: #222;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+        }
+        .resume-header { text-align: center; margin-bottom: 2rem; }
+        #preview-name { margin: 0; font-size: 2.5rem; }
+        #preview-contact { font-size: 0.9rem; color: #555; }
+        .resume-section { margin-bottom: 1.5rem; }
+        .resume-section h2 { font-size: 1.2rem; border-bottom: 2px solid #333; padding-bottom: 0.3rem; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .job, .school { margin-bottom: 1rem; }
+        .job h3, .school h3 { margin: 0; font-size: 1.1rem; }
+        .job p, .school p { margin: 0.2rem 0; font-size: 0.9rem; }
+        .job-dates, .school-dates { font-style: italic; color: #666; }
+        .responsibilities { padding-left: 1.2rem; font-size: 0.9rem; }
+        #preview-skills { line-height: 1.6; }
+
+        /* --- Actions & Template Selector --- */
+        .actions-bar {
+            background-color: #1c222d;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .template-selector, .pdf-actions { display: flex; align-items: center; gap: 1rem; }
+        #generate-pdf-btn {
+            background-color: var(--accent-cyan-glow);
+            color: #12151a;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #generate-pdf-btn:disabled { background-color: #3a414c; cursor: not-allowed; }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            #resume-preview-container { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a class="site-brand" href="index.html">ToolsTry</a>
+        </div>
+    </nav>
+
+    <main class="tool-page-main">
+        <div class="container tool-page-content-wrapper">
+            <a href="index.html" class="back-to-main-btn">← Back to ToolsTry Home</a>
+            
+            <div id="resume-builder-layout">
+                <!-- Left Column: Form Inputs -->
+                <div id="resume-form">
+                    <h3>Personal Details</h3>
+                    <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" placeholder="e.g., Jane Doe"></div>
+                    <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" placeholder="e.g., jane.doe@example.com"></div>
+                    <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="e.g., (123) 456-7890"></div>
+                    <div class="form-group"><label for="address">Address / Location</label><input type="text" id="address" placeholder="e.g., City, State"></div>
+
+                    <h3>Professional Summary</h3>
+                    <div class="form-group"><textarea id="summary" rows="4" placeholder="A brief summary of your skills and career objectives..."></textarea></div>
+
+                    <h3>Work Experience</h3>
+                    <div id="work-experience-list"></div>
+                    <button type="button" class="btn-add" id="add-experience-btn">Add Experience</button>
+                    
+                    <h3>Education</h3>
+                    <div id="education-list"></div>
+                    <button type="button" class="btn-add" id="add-education-btn">Add Education</button>
+
+                    <h3>Skills</h3>
+                    <div class="form-group"><textarea id="skills" rows="4" placeholder="Enter skills, separated by commas...
+e.g., JavaScript, Project Management, Graphic Design"></textarea></div>
+                    
+                    <div class="actions-bar">
+                        <div class="pdf-actions">
+                            <button id="generate-pdf-btn">Download as PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Preview -->
+                <div id="resume-preview-container">
+                    <div id="resume-output">
+                        <header class="resume-header">
+                            <h1 id="preview-name">Your Name</h1>
+                            <p id="preview-contact">
+                                <span id="preview-email">your.email@example.com</span> | 
+                                <span id="preview-phone">(123) 456-7890</span> | 
+                                <span id="preview-address">Your City, State</span>
+                            </p>
+                        </header>
+                        <section class="resume-section">
+                            <h2>Summary</h2>
+                            <p id="preview-summary">This is a placeholder for your professional summary. Describe your key qualifications and career goals here.</p>
+                        </section>
+                        <section class="resume-section">
+                            <h2>Work Experience</h2>
+                            <div id="preview-experience">
+                                <div class="job">
+                                    <h3>Sample Job Title</h3>
+                                    <p><strong>Sample Company</strong> | Sample Location</p>
+                                    <p class="job-dates">Jan 2020 - Present</p>
+                                    <ul class="responsibilities">
+                                        <li>This section will be populated with your work experience.</li>
+                                        <li>Add new entries using the form on the left.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="resume-section">
+                            <h2>Education</h2>
+                            <div id="preview-education">
+                                 <div class="school">
+                                    <h3>Your Degree</h3>
+                                    <p><strong>Your University</strong> | Your Location</p>
+                                    <p class="school-dates">Aug 2016 - May 2020</p>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="resume-section">
+                            <h2>Skills</h2>
+                            <p id="preview-skills">Your skills will appear here, separated by commas.</p>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Element Selections ---
+        const form = document.getElementById('resume-form');
+        const generatePdfBtn = document.getElementById('generate-pdf-btn');
+
+        // --- Live Preview Update Function ---
+        const updatePreview = () => {
+            // Personal Details
+            document.getElementById('preview-name').textContent = document.getElementById('name').value || 'Your Name';
+            document.getElementById('preview-email').textContent = document.getElementById('email').value || 'your.email@example.com';
+            document.getElementById('preview-phone').textContent = document.getElementById('phone').value || '(123) 456-7890';
+            document.getElementById('preview-address').textContent = document.getElementById('address').value || 'Your City, State';
+            document.getElementById('preview-summary').textContent = document.getElementById('summary').value || 'Your professional summary...';
+            
+            // Skills
+            document.getElementById('preview-skills').textContent = document.getElementById('skills').value.split(',').map(s => s.trim()).join(' • ');
+
+            // Work Experience
+            const experiencePreviewContainer = document.getElementById('preview-experience');
+            const experienceItems = document.querySelectorAll('#work-experience-list .dynamic-section-item');
+            experiencePreviewContainer.innerHTML = ''; // Clear existing
+            experienceItems.forEach(item => {
+                const title = item.querySelector('[placeholder="Job Title"]').value;
+                const company = item.querySelector('[placeholder="Company"]').value;
+                const location = item.querySelector('[placeholder="Location"]').value;
+                const dates = item.querySelector('[placeholder="Dates (e.g., Jan 2020 - Present)"]').value;
+                const responsibilities = item.querySelector('textarea').value.split('\n').map(line => `<li>${line}</li>`).join('');
+                
+                if(title || company) {
+                    experiencePreviewContainer.innerHTML += `
+                        <div class="job">
+                            <h3>${title}</h3>
+                            <p><strong>${company}</strong> | ${location}</p>
+                            <p class="job-dates">${dates}</p>
+                            <ul class="responsibilities">${responsibilities}</ul>
+                        </div>
+                    `;
+                }
+            });
+
+            // Education
+            const educationPreviewContainer = document.getElementById('preview-education');
+            const educationItems = document.querySelectorAll('#education-list .dynamic-section-item');
+            educationPreviewContainer.innerHTML = ''; // Clear existing
+            educationItems.forEach(item => {
+                const degree = item.querySelector('[placeholder="Degree / Major"]').value;
+                const school = item.querySelector('[placeholder="School / University"]').value;
+                const location = item.querySelector('[placeholder="Location"]').value;
+                const dates = item.querySelector('[placeholder="Dates (e.g., Aug 2016 - May 2020)"]').value;
+                
+                if (degree || school) {
+                    educationPreviewContainer.innerHTML += `
+                         <div class="school">
+                            <h3>${degree}</h3>
+                            <p><strong>${school}</strong> | ${location}</p>
+                            <p class="school-dates">${dates}</p>
+                        </div>
+                    `;
+                }
+            });
+        };
+
+        // --- Event Listeners for Live Updates ---
+        form.addEventListener('input', updatePreview);
+
+        // --- Dynamic Section Handling ---
+        const addDynamicSection = (containerId, placeholderStructure) => {
+            const container = document.getElementById(containerId);
+            const item = document.createElement('div');
+            item.className = 'dynamic-section-item';
+            item.innerHTML = `
+                ${placeholderStructure}
+                <button type="button" class="btn-remove">×</button>
+            `;
+            container.appendChild(item);
+        };
+
+        document.getElementById('add-experience-btn').addEventListener('click', () => {
+            const structure = `
+                <div class="form-group"><input type="text" placeholder="Job Title"></div>
+                <div class="form-group"><input type="text" placeholder="Company"></div>
+                <div class="form-group"><input type="text" placeholder="Location"></div>
+                <div class="form-group"><input type="text" placeholder="Dates (e.g., Jan 2020 - Present)"></div>
+                <div class="form-group"><textarea rows="3" placeholder="Key responsibilities (one per line)"></textarea></div>
+            `;
+            addDynamicSection('work-experience-list', structure);
+        });
+        
+        document.getElementById('add-education-btn').addEventListener('click', () => {
+            const structure = `
+                <div class="form-group"><input type="text" placeholder="Degree / Major"></div>
+                <div class="form-group"><input type="text" placeholder="School / University"></div>
+                <div class="form-group"><input type="text" placeholder="Location"></div>
+                <div class="form-group"><input type="text" placeholder="Dates (e.g., Aug 2016 - May 2020)"></div>
+            `;
+            addDynamicSection('education-list', structure);
+        });
+
+        // Event delegation for remove buttons
+        form.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-remove')) {
+                e.target.closest('.dynamic-section-item').remove();
+                updatePreview(); // Update preview after removing
+            }
+        });
+
+        // --- PDF Generation ---
+        generatePdfBtn.addEventListener('click', () => {
+            const resumeOutput = document.getElementById('resume-output');
+            const originalBtnText = generatePdfBtn.textContent;
+            
+            generatePdfBtn.textContent = 'Generating...';
+            generatePdfBtn.disabled = true;
+
+            html2canvas(resumeOutput, {
+                scale: 2, // Higher scale for better quality
+                useCORS: true 
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                
+                // A4 dimensions in mm: 210 x 297
+                const pdf = new jspdf.jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const canvasAspectRatio = canvasWidth / canvasHeight;
+                const pdfAspectRatio = pdfWidth / pdfHeight;
+
+                let finalCanvasWidth, finalCanvasHeight;
+
+                // Fit canvas to PDF page width
+                finalCanvasWidth = pdfWidth;
+                finalCanvasHeight = finalCanvasWidth / canvasAspectRatio;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, finalCanvasWidth, finalCanvasHeight);
+                pdf.save('resume.pdf');
+                
+                generatePdfBtn.textContent = originalBtnText;
+                generatePdfBtn.disabled = false;
+            }).catch(err => {
+                console.error("Error generating PDF:", err);
+                alert("Sorry, there was an error generating the PDF.");
+                generatePdfBtn.textContent = originalBtnText;
+                generatePdfBtn.disabled = false;
+            });
+        });
+
+        // Initial call to set placeholder text
+        updatePreview();
+    });
+    </script>
+</body>
+</html>
