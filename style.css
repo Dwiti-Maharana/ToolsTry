@@ -1,0 +1,522 @@
+/* General Body Styles */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif; /* Primary font for body text */
+    background-color: #0d0f14; /* Main Background Color */
+    color: #e0e0e0; /* Default text color */
+    line-height: 1.6;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif; /* Font for headings, you can change to Orbitron for more futuristic look */
+    color: #ffffff; /* White color for headings */
+    font-weight: 700;
+}
+
+/* Accent Cyan Glow Color Variables */
+:root {
+    --accent-cyan-glow: #42f8f5;
+    --glow-shadow: rgba(66, 248, 245, 0.6);
+}
+
+/* --- Navbar (Header) --- */
+.navbar {
+    background-color: #1c222d; /* Navbar Background */
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem;
+}
+
+/* Site Brand (Logo) - Uses Orbitron for a futuristic feel */
+.site-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-decoration: none;
+    text-shadow: 0 0 8px var(--glow-shadow); /* Glow effect for the logo text */
+    transition: all 0.3s ease-in-out;
+}
+
+.site-brand:hover {
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 15px var(--glow-shadow), 0 0 25px var(--accent-cyan-glow);
+}
+
+/* Navigation Links */
+.nav-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.nav-item {
+    margin-left: 2rem;
+}
+
+.nav-link {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.05rem;
+    position: relative;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.nav-link.active,
+.nav-link:hover {
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 8px var(--glow-shadow);
+}
+
+/* Glowing hover underline for links */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent-cyan-glow);
+    box-shadow: 0 0 8px var(--glow-shadow);
+    left: 50%;
+    bottom: -5px;
+    transition: width 0.3s ease-out, left 0.3s ease-out;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+    left: 0;
+}
+
+/* Mobile Menu Toggle (Hamburger) */
+.menu-toggle {
+    display: none; /* Hidden by default, shown on smaller screens */
+    font-size: 2rem;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    background: linear-gradient(135deg, #0d0f14 0%, #1a1f2c 100%);
+    padding: 6rem 0;
+    text-align: center;
+    color: #ffffff;
+    overflow: hidden; /* Important for animations that might move elements out of bounds temporarily */
+    position: relative; /* For absolute positioning of animations */
+}
+
+.hero-title {
+    font-family: 'Orbitron', sans-serif; /* Futuristic font for hero title */
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px var(--glow-shadow);
+    display: flex; /* To position text elements for slide-in */
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Space between words */
+}
+
+/* Text slide-in animation */
+.animated-text {
+    opacity: 0;
+    transform: translateX(100px); /* Default for slide-in-right */
+    animation: fadeInSlideRight 1s forwards cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-text.slide-in-left {
+    transform: translateX(-100px); /* Default for slide-in-left */
+    animation: fadeInSlideLeft 1s forwards cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-text:nth-child(2) { /* Delay the second part of the title */
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInSlideLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInSlideRight {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    max-width: 800px;
+    margin: 0 auto 2.5rem auto;
+    color: #c0c0c0;
+    opacity: 0; /* Hidden initially */
+    animation: fadeIn 1s forwards 1s; /* Fade in after title animation */
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* Hero Animation Container - For bouncing circles or other visuals */
+.hero-animation-container {
+    position: absolute; /* Position relative to hero-section */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allows clicks to pass through */
+    z-index: 1; /* Behind text */
+}
+
+/* Basic Bouncing Circles (CSS only - for advanced, use JS or Lottie) */
+.bouncing-circle {
+    position: absolute;
+    background: radial-gradient(circle, var(--accent-cyan-glow) 0%, rgba(66, 248, 245, 0.2) 70%, rgba(66, 248, 245, 0) 100%);
+    border-radius: 50%;
+    opacity: 0.4;
+    filter: blur(2px); /* Soft glow effect */
+}
+
+.circle-1 {
+    width: 60px;
+    height: 60px;
+    top: 20%;
+    left: 10%;
+    animation: bounce 3s infinite ease-in-out alternate, float 6s infinite ease-in-out alternate;
+}
+
+.circle-2 {
+    width: 80px;
+    height: 80px;
+    bottom: 15%;
+    right: 5%;
+    animation: bounce 3.5s infinite ease-in-out alternate 0.5s, float 7s infinite ease-in-out alternate 0.2s;
+}
+
+.circle-3 {
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    left: 80%;
+    animation: bounce 2.8s infinite ease-in-out alternate 1s, float 5s infinite ease-in-out alternate 0.5s;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-20px) scale(0.95);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateX(0) translateY(0);
+    }
+    50% {
+        transform: translateX(10px) translateY(10px);
+    }
+}
+
+.btn-action {
+    display: inline-block;
+    background-color: #12151a; /* Button background */
+    color: var(--accent-cyan-glow);
+    padding: 1rem 2.5rem;
+    border: 2px solid var(--accent-cyan-glow);
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px var(--glow-shadow); /* Initial glow */
+    position: relative; /* To ensure it's above circles */
+    z-index: 2;
+    opacity: 0; /* Hidden initially */
+    animation: fadeInScale 1s forwards 1.5s; /* Fade in and slight scale */
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+.btn-action:hover {
+    background-color: var(--accent-cyan-glow); /* Hover background */
+    color: #12151a; /* Dark text on hover */
+    box-shadow: 0 0 20px var(--glow-shadow), 0 0 30px var(--accent-cyan-glow); /* Stronger glow on hover */
+    transform: translateY(-3px) scale(1.02); /* Maintain scale */
+}
+
+/* --- Highlighted Tools Section --- */
+.highlighted-tools-section {
+    background-color: #0d0f14;
+    padding: 6rem 0;
+    text-align: center;
+}
+
+.highlighted-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.highlighted-tool-card {
+    background-color: #1c222d;
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(66, 248, 245, 0.3);
+    overflow: hidden;
+    position: relative;
+    transform: translateY(50px) scale(0.8); /* Initial state for GSAP */
+    opacity: 0; /* Initial state for GSAP */
+}
+
+/* This is the hover effect that will be applied *after* the GSAP animation runs */
+.highlighted-tool-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 0 30px var(--glow-shadow), 0 0 40px rgba(66, 248, 245, 0.5);
+    transition: transform 0.4s ease, box-shadow 0.4s ease; /* Add transition for smooth hover */
+}
+
+
+.tool-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 10px var(--glow-shadow);
+}
+
+.tool-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+    color: #ffffff;
+}
+
+.tool-description {
+    font-size: 1rem;
+    color: #c0c0c0;
+    line-height: 1.5;
+}
+
+/* --- Category Section --- */
+.category-section {
+    padding: 4rem 0;
+    background-color: #0d0f14;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    text-shadow: 0 0 8px var(--glow-shadow);
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.category-card {
+    background-color: #1c222d; /* Similar to navbar background for consistency */
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4); /* Soft shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(66, 248, 245, 0.2); /* Subtle border */
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px var(--glow-shadow), 0 0 30px rgba(66, 248, 245, 0.4); /* Neon-glow on hover */
+}
+
+.category-card h3 {
+    font-size: 1.6rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 5px var(--glow-shadow);
+}
+
+.category-card ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+
+.category-card ul li {
+    margin-bottom: 0.8rem;
+}
+
+.category-card ul li a {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-weight: 400;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.category-card ul li a:hover {
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 5px var(--glow-shadow);
+}
+
+.btn-view-all {
+    display: inline-block;
+    background-color: #12151a;
+    color: var(--accent-cyan-glow);
+    padding: 0.7rem 1.5rem;
+    border: 1px solid var(--accent-cyan-glow);
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 5px var(--glow-shadow);
+}
+
+.btn-view-all:hover {
+    background-color: var(--accent-cyan-glow);
+    color: #12151a;
+    box-shadow: 0 0 15px var(--glow-shadow);
+    transform: translateY(-2px);
+}
+
+/* --- Tool Display Section (Initially hidden) --- */
+.tool-display-section {
+    background-color: #12151a; /* Sidebar/Tool display background */
+    padding: 3rem 0;
+    min-height: 50vh; /* Ensure some height for content */
+}
+
+.back-to-tools-btn {
+    background: none;
+    border: 2px solid var(--accent-cyan-glow);
+    color: var(--accent-cyan-glow);
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px var(--glow-shadow);
+}
+
+.back-to-tools-btn:hover {
+    background-color: var(--accent-cyan-glow);
+    color: #12151a;
+    box-shadow: 0 0 15px var(--glow-shadow);
+}
+
+/* --- Footer --- */
+.footer {
+    background-color: #1c222d;
+    color: #e0e0e0;
+    text-align: center;
+    padding: 2rem 0;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(66, 248, 245, 0.1);
+}
+
+.footer-links {
+    margin-top: 1rem;
+}
+
+.footer-links a {
+    color: #e0e0e0;
+    text-decoration: none;
+    margin: 0 1rem;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--accent-cyan-glow);
+    text-shadow: 0 0 5px var(--glow-shadow);
+}
+
+/* --- Utility Classes / Responsive Design --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Basic responsiveness for mobile menu */
+@media (max-width: 768px) {
+    .nav-menu {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background-color: #1c222d;
+        position: absolute;
+        top: 60px; /* Adjust based on navbar height */
+        left: 0;
+        padding: 1rem 0;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-item {
+        margin: 0.5rem 0;
+        text-align: center;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .hero-title {
+        font-size: 2rem; /* Adjusted for smaller screens */
+        flex-direction: column; /* Stack words vertically */
+        gap: 0; /* Remove gap */
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .category-grid,
+    .highlighted-tools-grid {
+        grid-template-columns: 1fr; /* Single column on small screens */
+    }
+}
