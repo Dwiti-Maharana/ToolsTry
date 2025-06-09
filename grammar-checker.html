@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Checker - ToolsTry</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base Styles & Theme --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0d0f14; color: #e0e0e0; line-height: 1.6; }
+        :root { --accent-cyan-glow: #42f8f5; --glow-shadow: rgba(66, 248, 245, 0.6); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* --- Navbar & Footer --- */
+        .navbar { background-color: #1c222d; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .navbar-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; }
+        .site-brand { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 700; color: #ffffff; text-decoration: none; text-shadow: 0 0 8px var(--glow-shadow); }
+        .footer { background-color: #1c222d; text-align: center; padding: 2rem 0; font-size: 0.9rem; border-top: 1px solid rgba(66, 248, 245, 0.1); }
+
+        /* --- General Tool Page Layout --- */
+        .tool-page-main { padding: 2rem 0; }
+        .tool-page-content-wrapper { width: 100%; max-width: 1000px; margin: auto; }
+        .back-to-main-btn { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #1c222d; color: #e0e0e0; padding: 0.8rem 1.5rem; border: 2px solid #5a6268; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .back-to-main-btn:hover { background-color: #2a303d; color: var(--accent-cyan-glow); border-color: var(--accent-cyan-glow); transform: translateY(-2px); }
+        .tool-page-card { background-color: #1c222d; border-radius: 12px; padding: 2rem 2.5rem; box-shadow: 0 0 25px rgba(66, 248, 245, 0.2); border: 1px solid rgba(66, 248, 245, 0.3); }
+        .tool-page-card h2 { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 2.5rem; margin-bottom: 1rem; color: var(--accent-cyan-glow); text-shadow: 0 0 10px var(--glow-shadow); }
+        .tool-page-card p { font-size: 1.1rem; text-align: center; color: #c0c0c0; margin-bottom: 2.5rem; }
+
+        /* --- Grammar Checker Specific Styles --- */
+        #text-input {
+            width: 100%;
+            min-height: 250px;
+            background-color: #12151a;
+            border: 1px solid #3a414c;
+            color: #e0e0e0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        .actions-bar {
+            margin: 1.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        #check-btn {
+            background-color: var(--accent-cyan-glow);
+            color: #0d0f14;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #check-btn:disabled { background-color: #3a414c; color: #666; cursor: not-allowed; }
+        .utility-btns button {
+            background: none;
+            border: 1px solid #5a6268;
+            color: #c0c0c0;
+            padding: 0.6rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .utility-btns button:hover { border-color: var(--accent-cyan-glow); color: var(--accent-cyan-glow); }
+        
+        #results-container { margin-top: 1.5rem; }
+        #results-summary { text-align: center; font-style: italic; color: #c0c0c0; min-height: 24px; }
+        #highlighted-text {
+            border: 1px solid #3a414c;
+            background-color: #12151a;
+            padding: 1rem;
+            border-radius: 8px;
+            min-height: 250px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .grammar-error {
+            background-color: rgba(255, 165, 0, 0.25);
+            border-bottom: 2px solid orange;
+            cursor: pointer;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+        .disclaimer {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #888;
+            margin-top: 2rem;
+        }
+        
+        /* --- Suggestion Popup --- */
+        #suggestion-popup {
+            position: absolute;
+            display: none;
+            background-color: #2a303d;
+            border: 1px solid var(--accent-cyan-glow);
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            padding: 0.5rem;
+            z-index: 100;
+            max-width: 300px;
+        }
+        #suggestion-popup .message {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid #444;
+            margin-bottom: 0.5rem;
+        }
+        #suggestion-popup ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #suggestion-popup li {
+            padding: 0.6rem 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            font-weight: bold;
+            color: var(--accent-cyan-glow);
+        }
+        #suggestion-popup li:hover {
+            background-color: rgba(66, 248, 245, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a class="site-brand" href="index.html">ToolsTry</a>
+        </div>
+    </nav>
+
+    <main class="tool-page-main">
+        <div class="container tool-page-content-wrapper">
+            <a href="index.html" class="back-to-main-btn">← Back to ToolsTry Home</a>
+
+            <div class="tool-page-card">
+                <h2>Grammar & Spell Checker</h2>
+                <p>Improve your writing by finding and fixing grammar, style, and spelling errors.</p>
+
+                <div id="checker-container">
+                    <textarea id="text-input" placeholder="Paste or type your text here..."></textarea>
+                    
+                    <div class="actions-bar">
+                        <button id="check-btn">Check Text</button>
+                        <div class="utility-btns">
+                            <button id="copy-btn">Copy Corrected</button>
+                            <button id="clear-btn">Clear All</button>
+                        </div>
+                    </div>
+
+                    <div id="results-container">
+                        <p id="results-summary">Results will appear here.</p>
+                        <div id="highlighted-text" contenteditable="true"></div>
+                    </div>
+                </div>
+
+                <p class="disclaimer">This tool uses the public LanguageTool API. Your text is sent to their servers for checking and is not stored by us.</p>
+            </div>
+        </div>
+        
+        <!-- Hidden Popup for Suggestions -->
+        <div id="suggestion-popup">
+            <div class="message"></div>
+            <ul></ul>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 ToolsTry. All rights reserved. | Crafted with purpose from Konark, Odisha, India.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- UI Elements ---
+        const textInput = document.getElementById('text-input');
+        const checkBtn = document.getElementById('check-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const resultsSummary = document.getElementById('results-summary');
+        const highlightedText = document.getElementById('highlighted-text');
+        const suggestionPopup = document.getElementById('suggestion-popup');
+        
+        const API_URL = 'https://api.languagetool.org/v2/check';
+        let currentMatches = [];
+        let activeErrorSpan = null;
+
+        // --- Core Functions ---
+
+        const checkGrammar = async () => {
+            const text = textInput.value;
+            if (!text.trim()) {
+                resultsSummary.textContent = 'Please enter some text to check.';
+                return;
+            }
+
+            checkBtn.disabled = true;
+            checkBtn.textContent = 'Checking...';
+            resultsSummary.textContent = 'Analyzing your text...';
+            highlightedText.innerHTML = '';
+
+            try {
+                const params = new URLSearchParams({
+                    text: text,
+                    language: 'en-US',
+                });
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: params,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                currentMatches = data.matches;
+                displayResults(text, currentMatches);
+
+            } catch (error) {
+                console.error('Error checking grammar:', error);
+                resultsSummary.textContent = 'Error: Could not connect to the checking service.';
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.textContent = 'Check Text';
+            }
+        };
+
+        const displayResults = (text, matches) => {
+            resultsSummary.textContent = `${matches.length} potential issue(s) found. Click on highlighted text for suggestions.`;
+            
+            let lastIndex = 0;
+            let outputHtml = '';
+
+            matches.forEach((match, index) => {
+                outputHtml += text.substring(lastIndex, match.offset);
+                outputHtml += `<span class="grammar-error" data-match-index="${index}">${text.substring(match.offset, match.offset + match.length)}</span>`;
+                lastIndex = match.offset + match.length;
+            });
+
+            outputHtml += text.substring(lastIndex);
+            highlightedText.innerHTML = outputHtml;
+        };
+
+        const showSuggestionPopup = (spanElement, match) => {
+            activeErrorSpan = spanElement;
+            const messageDiv = suggestionPopup.querySelector('.message');
+            const suggestionList = suggestionPopup.querySelector('ul');
+            
+            messageDiv.textContent = match.message;
+            suggestionList.innerHTML = '';
+
+            if (match.replacements.length > 0) {
+                match.replacements.forEach(replacement => {
+                    const li = document.createElement('li');
+                    li.textContent = replacement.value;
+                    li.addEventListener('click', () => applySuggestion(replacement.value));
+                    suggestionList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'No suggestions available.';
+                li.style.cursor = 'default';
+                li.style.color = '#ccc';
+                suggestionList.appendChild(li);
+            }
+
+            const rect = spanElement.getBoundingClientRect();
+            suggestionPopup.style.left = `${rect.left + window.scrollX}px`;
+            suggestionPopup.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            suggestionPopup.style.display = 'block';
+        };
+
+        const applySuggestion = (replacement) => {
+            if (activeErrorSpan) {
+                const textNode = document.createTextNode(replacement);
+                activeErrorSpan.replaceWith(textNode);
+                hideSuggestionPopup();
+                
+                // Recalculate summary after a fix
+                const errorCount = document.querySelectorAll('.grammar-error').length;
+                resultsSummary.textContent = `${errorCount} potential issue(s) remaining.`;
+            }
+        };
+
+        const hideSuggestionPopup = () => {
+            suggestionPopup.style.display = 'none';
+            activeErrorSpan = null;
+        };
+
+        // --- Event Listeners ---
+        checkBtn.addEventListener('click', checkGrammar);
+        
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            highlightedText.innerHTML = '';
+            resultsSummary.textContent = 'Results will appear here.';
+            hideSuggestionPopup();
+        });
+
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(highlightedText.innerText)
+                .then(() => alert('Corrected text copied to clipboard!'))
+                .catch(err => console.error('Failed to copy text: ', err));
+        });
+
+        highlightedText.addEventListener('click', (e) => {
+            if (e.target.classList.contains('grammar-error')) {
+                const matchIndex = parseInt(e.target.dataset.matchIndex, 10);
+                const match = currentMatches[matchIndex];
+                showSuggestionPopup(e.target, match);
+            }
+        });
+
+        // Hide popup if clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!suggestionPopup.contains(e.target) && !e.target.classList.contains('grammar-error')) {
+                hideSuggestionPopup();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Editor - ToolsTry</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.102/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base Styles & Theme --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0d0f14; color: #e0e0e0; line-height: 1.6; }
+        :root { --accent-cyan-glow: #42f8f5; --glow-shadow: rgba(66, 248, 245, 0.6); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* --- Navbar & Footer --- */
+        .navbar { background-color: #1c222d; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .navbar-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; }
+        .site-brand { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 700; color: #ffffff; text-decoration: none; text-shadow: 0 0 8px var(--glow-shadow); }
+        .footer { background-color: #1c222d; text-align: center; padding: 2rem 0; font-size: 0.9rem; border-top: 1px solid rgba(66, 248, 245, 0.1); }
+
+        /* --- General Tool Page Layout --- */
+        .tool-page-main { padding: 2rem 0; }
+        .tool-page-content-wrapper { width: 100%; max-width: 1000px; margin: auto; }
+        .back-to-main-btn { display: inline-flex; align-items: center; gap: 0.5rem; background-color: #1c222d; color: #e0e0e0; padding: 0.8rem 1.5rem; border: 2px solid #5a6268; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .back-to-main-btn:hover { background-color: #2a303d; color: var(--accent-cyan-glow); border-color: var(--accent-cyan-glow); transform: translateY(-2px); }
+        .tool-page-card { background-color: #1c222d; border-radius: 12px; padding: 2rem; box-shadow: 0 0 25px rgba(66, 248, 245, 0.2); border: 1px solid rgba(66, 248, 245, 0.3); }
+
+        /* --- PDF Editor Specific Styles --- */
+        #upload-container { text-align: center; padding: 3rem 0; }
+        .upload-btn { background-color: var(--accent-cyan-glow); color: #0d0f14; padding: 1rem 2.5rem; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; transition: background-color 0.2s; }
+        .upload-btn:disabled { background-color: #3a414c; color: #888; cursor: not-allowed; }
+        .file-instructions { margin-top: 1rem; color: #888; }
+        
+        #editor-container { display: none; flex-direction: column; align-items: center; gap: 1.5rem; }
+        #toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; background-color: #12151a; padding: 0.75rem; border-radius: 8px; justify-content: center; }
+        #toolbar button { background: #2a303d; color: #e0e0e0; border: 1px solid #444; padding: 0.6rem 1rem; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
+        #toolbar button:hover { border-color: var(--accent-cyan-glow); color: var(--accent-cyan-glow); }
+        #toolbar button.active { background-color: var(--accent-cyan-glow); color: #0d0f14; border-color: var(--accent-cyan-glow); font-weight: bold; }
+        #toolbar button:disabled { background: #222; color: #666; cursor: not-allowed; border-color: #333; }
+        .toolbar-separator { width: 1px; background-color: #444; margin: 0 0.5rem; }
+        
+        #pdf-viewer { position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #pdf-canvas, #drawing-canvas { position: absolute; top: 0; left: 0; }
+        #drawing-canvas { z-index: 10; }
+        
+        #page-nav { display: flex; align-items: center; gap: 1rem; }
+        #page-info { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a class="site-brand" href="index.html">ToolsTry</a>
+        </div>
+    </nav>
+
+    <main class="tool-page-main">
+        <div class="container tool-page-content-wrapper">
+            <a href="index.html" class="back-to-main-btn">← Back to ToolsTry Home</a>
+
+            <div class="tool-page-card">
+                <div id="upload-container">
+                    <h2>PDF Editor</h2>
+                    <p>Add text, images, and drawings to your PDF documents directly in the browser.</p>
+                    <label for="pdf-input" class="upload-btn" id="upload-label">Select PDF to Edit</label>
+                    <input type="file" id="pdf-input" accept=".pdf" style="display: none;">
+                    <p class="file-instructions">All processing is done on your computer. Your files are not uploaded.</p>
+                </div>
+
+                <div id="editor-container">
+                    <div id="toolbar">
+                        <button id="cursor-btn" class="active" title="Cursor Tool">☝️ Cursor</button>
+                        <button id="text-btn" title="Add Text"> T </button>
+                        <button id="image-btn" title="Add Image">🖼️</button>
+                        <button id="draw-btn" title="Draw Freehand">✏️</button>
+                        <div class="toolbar-separator"></div>
+                        <button id="save-pdf-btn" title="Save & Download PDF">💾 Save PDF</button>
+                    </div>
+
+                    <div id="pdf-viewer">
+                        <canvas id="pdf-canvas"></canvas>
+                        <canvas id="drawing-canvas"></canvas>
+                    </div>
+
+                    <div id="page-nav">
+                        <button id="prev-page-btn">Previous</button>
+                        <span id="page-info">Page 1 / 1</span>
+                        <button id="next-page-btn">Next</button>
+                    </div>
+                </div>
+                <input type="file" id="image-input" accept="image/png, image/jpeg" style="display:none">
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 ToolsTry. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    // --- IMPORTANT FIX: Moved worker source setup to the top of the script ---
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.102/pdf.worker.min.js`;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+        const uploadContainer = document.getElementById('upload-container');
+        const uploadLabel = document.getElementById('upload-label');
+        const editorContainer = document.getElementById('editor-container');
+        const pdfInput = document.getElementById('pdf-input');
+        const imageInput = document.getElementById('image-input');
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const pdfCanvas = document.getElementById('pdf-canvas');
+        const drawingCanvas = document.getElementById('drawing-canvas');
+        const pageInfo = document.getElementById('page-info');
+        const prevPageBtn = document.getElementById('prev-page-btn');
+        const nextPageBtn = document.getElementById('next-page-btn');
+        const savePdfBtn = document.getElementById('save-pdf-btn');
+        const cursorBtn = document.getElementById('cursor-btn');
+        const textBtn = document.getElementById('text-btn');
+        const imageBtn = document.getElementById('image-btn');
+        const drawBtn = document.getElementById('draw-btn');
+
+        let pdfDoc_render = null; // For rendering with PDF.js
+        let pdfDoc_edit = null;   // For editing with PDF-Lib
+        let currentPage = 1;
+        let totalPages = 0;
+        let activeTool = 'cursor';
+        // Annotations stored per page
+        let annotations = []; // { type: 'text'|'image'|'draw', page: num, data: ... }
+        let isDrawing = false;
+        let currentPath = [];
+
+        const pdfCtx = pdfCanvas.getContext('2d');
+        const drawingCtx = drawingCanvas.getContext('2d');
+
+        pdfInput.addEventListener('change', handlePdfUpload);
+        prevPageBtn.addEventListener('click', () => changePage(-1));
+        nextPageBtn.addEventListener('click', () => changePage(1));
+        savePdfBtn.addEventListener('click', savePdf);
+        cursorBtn.addEventListener('click', () => setActiveTool('cursor'));
+        textBtn.addEventListener('click', () => setActiveTool('text'));
+        imageBtn.addEventListener('click', () => {
+            setActiveTool('image'); // Set tool, then trigger file input
+            imageInput.click();
+        });
+        drawBtn.addEventListener('click', () => setActiveTool('draw'));
+        imageInput.addEventListener('change', handleImageUpload);
+        drawingCanvas.addEventListener('mousedown', handleMouseDown);
+        drawingCanvas.addEventListener('mousemove', handleMouseMove);
+        drawingCanvas.addEventListener('mouseup', handleMouseUp);
+        drawingCanvas.addEventListener('mouseout', handleMouseUp); // End drawing if mouse leaves canvas
+        
+        async function handlePdfUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            uploadLabel.textContent = 'Loading...';
+            uploadLabel.disabled = true;
+
+            try {
+                const pdfData = await file.arrayBuffer();
+
+                // Use Promise.all to load both PDF.js and PDF-Lib documents in parallel
+                const [renderDoc, editDoc] = await Promise.all([
+                    pdfjsLib.getDocument({ data: pdfData }).promise,
+                    PDFDocument.load(pdfData)
+                ]);
+
+                pdfDoc_render = renderDoc;
+                pdfDoc_edit = editDoc;
+
+                totalPages = pdfDoc_render.numPages;
+                currentPage = 1;
+                annotations = []; // Clear annotations for new PDF
+
+                uploadContainer.style.display = 'none';
+                editorContainer.style.display = 'flex'; // Use flex for editor container
+
+                await renderPage(currentPage);
+
+            } catch (error) {
+                console.error("Failed to load PDF:", error);
+                alert("Could not load the PDF. It might be corrupted or in an unsupported format.");
+            } finally {
+                // Reset upload button state
+                uploadLabel.textContent = 'Select PDF to Edit';
+                uploadLabel.disabled = false;
+            }
+        }
+        
+        async function renderPage(pageNum) {
+            const page = await pdfDoc_render.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.5 }); // Keep scale consistent
+            
+            // Set canvas dimensions
+            pdfCanvas.height = viewport.height;
+            pdfCanvas.width = viewport.width;
+            drawingCanvas.height = viewport.height;
+            drawingCanvas.width = viewport.width;
+
+            // Set viewer dimensions to match canvas for proper overlay
+            pdfViewer.style.width = `${viewport.width}px`;
+            pdfViewer.style.height = `${viewport.height}px`;
+
+            // Render PDF page
+            await page.render({ canvasContext: pdfCtx, viewport }).promise;
+            
+            updatePageInfo();
+            drawAllAnnotations(); // Redraw all annotations for the current page
+        }
+        
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            if (newPage > 0 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderPage(newPage);
+            }
+        }
+
+        function updatePageInfo() {
+            pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages;
+        }
+
+        function setActiveTool(tool) {
+            document.querySelector('#toolbar button.active').classList.remove('active');
+            document.getElementById(`${tool}-btn`).classList.add('active');
+            activeTool = tool;
+            drawingCanvas.style.cursor = tool === 'text' ? 'text' : (tool === 'draw' ? 'crosshair' : 'default');
+        }
+
+        async function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const imageData = await file.arrayBuffer();
+            const imageType = file.type;
+            // Add image annotation, assuming a default size and position for now
+            // Users can manually adjust by dragging or re-uploading
+            annotations.push({ type: 'image', page: currentPage, x: 50, y: 50, data: imageData, dataType: imageType, width: 150 });
+            drawAllAnnotations();
+            imageInput.value = ''; // Clear file input
+        }
+
+        function drawAllAnnotations() {
+            drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            annotations.forEach(anno => {
+                if (anno.page === currentPage) {
+                    switch (anno.type) {
+                        case 'text':
+                            drawText(anno.text, anno.x, anno.y);
+                            break;
+                        case 'image':
+                            // Recreate Image object from stored data for drawing
+                            const img = new Image();
+                            const blob = new Blob([anno.data], { type: anno.dataType });
+                            img.src = URL.createObjectURL(blob);
+                            img.onload = () => {
+                                drawImage(img, anno.x, anno.y, anno.width);
+                                URL.revokeObjectURL(img.src); // Clean up object URL
+                            };
+                            break;
+                        case 'draw':
+                            drawPath(anno.path);
+                            break;
+                    }
+                }
+            });
+        }
+        
+        function drawText(text, x, y) {
+            drawingCtx.font = '20px Helvetica'; // Consistent font for display
+            drawingCtx.fillStyle = 'black'; // Black color for display on canvas
+            drawingCtx.fillText(text, x, y);
+        }
+        
+        function drawImage(img, x, y, width) {
+            const aspectRatio = img.height / img.width;
+            const height = width * aspectRatio;
+            drawingCtx.drawImage(img, x, y, width, height);
+        }
+
+        function drawPath(path, color = 'red', width = 3) {
+            if (path.length < 2) return;
+            drawingCtx.beginPath();
+            drawingCtx.moveTo(path[0].x, path[0].y);
+            for (let i = 1; i < path.length; i++) {
+                drawingCtx.lineTo(path[i].x, path[i].y);
+            }
+            drawingCtx.strokeStyle = color;
+            drawingCtx.lineWidth = width;
+            drawingCtx.lineJoin = 'round';
+            drawingCtx.lineCap = 'round';
+            drawingCtx.stroke();
+        }
+
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+        }
+
+        function handleMouseDown(e) {
+            const pos = getMousePos(drawingCanvas, e);
+            if (activeTool === 'text') {
+                const text = prompt('Enter text:');
+                if (text) {
+                    annotations.push({ type: 'text', page: currentPage, text, x: pos.x, y: pos.y });
+                    drawAllAnnotations();
+                }
+            } else if (activeTool === 'draw') {
+                isDrawing = true;
+                currentPath = [{ x: pos.x, y: pos.y }];
+            }
+        }
+        
+        function handleMouseMove(e) {
+            if (!isDrawing || activeTool !== 'draw') return;
+            const pos = getMousePos(drawingCanvas, e);
+            currentPath.push({ x: pos.x, y: pos.y });
+            
+            // Clear only the drawing canvas and redraw all annotations for the current page,
+            // including the currently drawing path.
+            drawAllAnnotations(); // This ensures previous static drawings are there
+            drawPath(currentPath); // This draws the current path being created
+        }
+
+        function handleMouseUp() {
+            if (isDrawing && activeTool === 'draw') {
+                annotations.push({ type: 'draw', page: currentPage, path: [...currentPath] }); // Save a copy
+                currentPath = [];
+            }
+            isDrawing = false;
+        }
+
+        async function savePdf() {
+            savePdfBtn.disabled = true;
+            savePdfBtn.textContent = 'Saving...';
+
+            const pages = pdfDoc_edit.getPages();
+            const font = await pdfDoc_edit.embedFont(StandardFonts.Helvetica);
+
+            for (const anno of annotations) {
+                const page = pages[anno.page - 1]; // PDF-Lib pages are 0-indexed
+                const { width, height } = page.getSize();
+                // We need to scale coordinates from canvas (viewport scaled) to PDF page (original size)
+                // Let's assume a consistent scale was used for rendering (1.5 in renderPage)
+                // If rendering scale changes, this needs adjustment or dynamic calculation.
+                const renderScale = 1.5; 
+                // Since canvas height corresponds to viewport.height after scale, we need to map back.
+                // PDF-Lib y-coordinates are from bottom-left, canvas from top-left.
+                const originalPageHeight = height / renderScale; // Approximate original height based on render scale
+
+                switch (anno.type) {
+                    case 'text':
+                        // Adjust y for PDF-Lib (bottom-left origin)
+                        page.drawText(anno.text, { 
+                            x: anno.x / renderScale, 
+                            y: originalPageHeight - (anno.y / renderScale) - (20 / renderScale), // 20 is font size
+                            font, 
+                            size: 20 / renderScale, 
+                            color: rgb(0, 0, 0) 
+                        });
+                        break;
+                    case 'image':
+                        const image = await (anno.dataType === 'image/png' ? pdfDoc_edit.embedPng(anno.data) : pdfDoc_edit.embedJpg(anno.data));
+                        const aspectRatio = image.height / image.width;
+                        const imgWidth = anno.width / renderScale;
+                        const imgHeight = imgWidth * aspectRatio;
+                        page.drawImage(image, { 
+                            x: anno.x / renderScale, 
+                            y: originalPageHeight - (anno.y / renderScale) - imgHeight, 
+                            width: imgWidth, 
+                            height: imgHeight 
+                        });
+                        break;
+                    case 'draw':
+                        // Convert canvas path points to SVG path commands for PDF-Lib
+                        if (anno.path.length < 2) continue; // Skip if path is too short
+
+                        let svgPath = '';
+                        // Adjust coordinates for PDF-Lib (bottom-left origin)
+                        svgPath += `M ${anno.path[0].x / renderScale} ${originalPageHeight - (anno.path[0].y / renderScale)}`;
+                        for (let i = 1; i < anno.path.length; i++) {
+                            svgPath += ` L ${anno.path[i].x / renderScale} ${originalPageHeight - (anno.path[i].y / renderScale)}`;
+                        }
+                        
+                        page.drawSvgPath(svgPath, { 
+                            borderColor: rgb(1, 0, 0), // Red color for drawing
+                            borderWidth: 3 / renderScale, // Consistent line width
+                            lineCap: 'Round',
+                            lineJoin: 'Round'
+                        });
+                        break;
+                }
+            }
+
+            const pdfBytes = await pdfDoc_edit.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited_document.pdf';
+            a.click();
+            URL.revokeObjectURL(url); // Clean up the object URL
+            
+            savePdfBtn.disabled = false;
+            savePdfBtn.textContent = '💾 Save PDF';
+        }
+    });
+    </script>
+</body>
+</html>
